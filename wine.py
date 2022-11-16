@@ -29,15 +29,10 @@ pd.set_option('display.width', 1000)
 pd.set_option('display.max_columns', None)                  #para poder visualizar todas as colunas no display
 pd.set_option('display.width', 1000)                        # para a largura do display ser de dimensao 1000
 
-df_red = pd.read_csv("redwine.csv",delimiter=";")
-df_white = pd.read_csv("whitewine.csv",delimiter=";")
-df_red.columns = df_red.columns.str.replace(' ', '_')       # torna mais facil a utilizaçao das colunas
-df_white.columns = df_white.columns.str.replace(' ', '_')   # torna mais facil a utilizaçao das colunas
-
-df_red["color"] = "R"
-df_white["color"] = "W"
-df_all = pd.concat([df_red, df_white], axis=0)
-df_all.columns = df_all.columns.str.replace(' ', '_')       # torna mais facil a utilizaçao das colunas
+redwines = pd.read_csv("redwine.csv",delimiter=";")
+whitewines = pd.read_csv("whitewine.csv",delimiter=";")
+redwines.columns = redwines.columns.str.replace(' ', '_')       # torna mais facil a utilizaçao das colunas
+whitewines.columns = whitewines.columns.str.replace(' ', '_')   # torna mais facil a utilizaçao das colunas
 
 def menu():
     print("--------- Initial Menu ---------")
@@ -51,7 +46,6 @@ def menu():
 
 menu()
 option = int(input("\nInsert the command that you want to execute:\n"))
-
 
 def submenu1():
     print("\n")
@@ -78,8 +72,10 @@ def submenu1():
 def submenu2():
     print("\n")
     print("------ Data Preparation Menu ------")
-    print("[1] Normalization")
-    print("[2] Standardization")
+    print("[1] Data Discretization")
+    print("[2] Data Integration")
+    print("[3] Data Cleaning")
+    print("[4] Data Transformation")
 
     print("\n[0] Return to the program's main menu")
 
@@ -88,8 +84,8 @@ def submenu3():
     print("\n")
     print("------ Modeling (ML Algorithms Application) Menu ------")
     print("[1] NaiveBayes")
-    print("[2] Knn")
     print("[2] Better k for the KNN")
+    print("[3] KNN")
     print("[4] Cross-Validation and Training and Test Set - Red Wine")
     print("[5] Cross-Validation and Training and Test Set - White Wine")
     print("[6] Decision Tree - Classification")
@@ -119,36 +115,36 @@ while option != 0:
             if option == 1:
                 print('\n')
                 print('Red wine dataset')
-                print(df_red.head(50))
+                print(redwines.head(50))
                 print('\n')
                 print('White wine dataset')
-                print(df_white.head(50))
+                print(whitewines.head(50))
 
             elif option == 2:
                 print('\n')
                 print('Number of matrix elements for red wine')
-                print(df_red.size)
+                print(redwines.size)
                 print('Number of matrix elements for white wine')
-                print(df_white.size)
+                print(whitewines.size)
                 print('\n')
                 print('Matrix dimension for red wines')
-                print(df_red.shape)
+                print(redwines.shape)
                 print('Matrix dimension for white wines')
-                print(df_white.shape)
+                print(whitewines.shape)
                 print('\n')
                 print("Total number of data in each attribute for red wine")
-                print(df_red.count())
+                print(redwines.count())
                 print("Total number of data in each attribute for white wine")
-                print(df_white.count())
+                print(whitewines.count())
                 print('\n')
                 print("Type of variables and amount of data in each column for red wine")
-                print(df_red.info())
+                print(redwines.info())
                 print("Type of variables and amount of data in each column for white wine")
-                print(df_white.info())
+                print(whitewines.info())
 
             elif option == 3:
-                nulos_red = df_red.isnull().sum()
-                nulos_white = df_white.isnull().sum()
+                nulos_red = redwines.isnull().sum()
+                nulos_white = whitewines.isnull().sum()
                 print('\n')
                 print('Red wine dataset')
                 print(nulos_red)
@@ -161,42 +157,42 @@ while option != 0:
             elif option == 4:
                 print("\n")
                 print("Red Wine")
-                print(df_red.describe())
+                print(redwines.describe())
                 print("\n")
                 print("White Wine")
-                print(df_white.describe())
+                print(whitewines.describe())
                 print("\n")
 
             elif option == 5:
-                df_red.hist()
+                redwines.hist()
                 plt.tight_layout(pad=1.1)
                 plt.suptitle('Red Wine - distribution of the various components', fontsize=13)
-                df_white.hist()
+                whitewines.hist()
                 plt.tight_layout(pad=1.1)
                 plt.suptitle('White Wine - distribution of the various components', fontsize=13)
                 plt.show()
 
             elif option == 6:
-                sns.violinplot(x="quality", data=df_red)
+                sns.violinplot(x="quality", data=redwines)
                 plt.suptitle('Distribution of Red Wine taking into account the quality', fontsize=12)
                 plt.figure()
-                sns.violinplot(x="quality", data=df_white)
+                sns.violinplot(x="quality", data=whitewines)
                 plt.suptitle('Distribution of White Wine taking into account the quality', fontsize=12)
                 plt.show()
 
             elif option == 7:
-                sns.boxplot(data=df_red, palette = 'Blues')
+                sns.boxplot(data=redwines, palette = 'Blues')
                 plt.tight_layout(pad=1.1)
                 plt.suptitle('Red Wine - distribution of the various components', fontsize=13)
-                sns.boxplot(data=df_red, palette = 'Blues')
+                sns.boxplot(data=redwines, palette = 'Blues')
                 plt.tight_layout(pad=1.1)
                 plt.suptitle('White Wine - distribution of the various components', fontsize=13)
                 plt.show()
 
             elif option == 8:
                 numerics = ['int16', 'int32', 'int64', 'float16', 'float32', 'float64']
-                correlationred = df_red.select_dtypes(include=numerics).corr()['quality'].sort_values(ascending=False)
-                correlationwhite = df_white.select_dtypes(include=numerics).corr()['quality'].sort_values(ascending=False)
+                correlationred = redwines.select_dtypes(include=numerics).corr()['quality'].sort_values(ascending=False)
+                correlationwhite = whitewines.select_dtypes(include=numerics).corr()['quality'].sort_values(ascending=False)
                 print("\n")
                 print('Red Wine')
                 print(correlationred)
@@ -206,14 +202,14 @@ while option != 0:
 
             elif option == 9:
                 numerics = ['int16', 'int32', 'int64', 'float16', 'float32', 'float64']
-                corr_red = df_red.select_dtypes(include=numerics).corr()
+                corr_red = redwines.select_dtypes(include=numerics).corr()
                 plt.subplots(figsize=(12, 6))
                 sns.heatmap(corr_red, xticklabels=corr_red.columns, yticklabels=corr_red.columns, annot=True,
                             cmap=sns.diverging_palette(220, 20, as_cmap=True))
                 plt.suptitle('HeatMap- Correlation between red wine attributes', fontsize=15)
                 plt.tight_layout()
 
-                corr_white = df_white.select_dtypes(include=numerics).corr()
+                corr_white = whitewines.select_dtypes(include=numerics).corr()
                 plt.subplots(figsize=(12, 6))
                 sns.heatmap(corr_white, xticklabels=corr_white.columns, yticklabels=corr_white.columns, annot=True,
                             cmap=sns.diverging_palette(220, 20, as_cmap=True))
@@ -224,8 +220,8 @@ while option != 0:
 
             elif option == 10:
                 numerics = ['int16', 'int32', 'int64', 'float16', 'float32', 'float64']
-                covarianciared = df_red.select_dtypes(include=numerics).cov()['quality'].sort_values(ascending=False)
-                covarianciawhite = df_white.select_dtypes(include=numerics).cov()['quality'].sort_values(ascending=False)
+                covarianciared = redwines.select_dtypes(include=numerics).cov()['quality'].sort_values(ascending=False)
+                covarianciawhite = whitewines.select_dtypes(include=numerics).cov()['quality'].sort_values(ascending=False)
 
                 print("\n")
                 print('Red Wine')
@@ -234,7 +230,7 @@ while option != 0:
                 print('White Wine')
                 print(covarianciawhite)
 
-                corr = df_red.select_dtypes(include=numerics).cov()
+                corr = redwines.select_dtypes(include=numerics).cov()
                 print('\n')
                 print('Covariances between the various attributes of red wine')
                 print(corr)
@@ -245,7 +241,7 @@ while option != 0:
                 plt.suptitle('Covariances between the various attributes of red wine', fontsize=15)
                 plt.tight_layout()
 
-                corr1 = df_white.select_dtypes(include=numerics).cov()
+                corr1 = whitewines.select_dtypes(include=numerics).cov()
                 print('\n')
                 print('Covariances between the various attributes of white wine')
                 print(corr1)
@@ -260,69 +256,69 @@ while option != 0:
             elif option == 11:
                 plt.figure(figsize=(6, 4))
                 plt.suptitle('Red Wine - quality & alcohol', fontsize=15)
-                sns.boxplot(orient='v', data=df_red, y="alcohol", x="quality")
-                #sns.stripplot(data=df_red, y="alcohol", x="quality")
+                sns.boxplot(orient='v', data=redwines, y="alcohol", x="quality")
+                #sns.stripplot(data=redwines, y="alcohol", x="quality")
 
                 plt.figure(figsize=(6, 4))
                 plt.suptitle('Red Wine - quality & sulfates', fontsize=15)
-                sns.boxplot(orient='v', data=df_red, y="sulphates", x="quality")
-                #sns.stripplot(data=df_red, y="sulphates", x="quality")
+                sns.boxplot(orient='v', data=redwines, y="sulphates", x="quality")
+                #sns.stripplot(data=redwines, y="sulphates", x="quality")
 
                 plt.figure(figsize=(6, 4))
                 plt.suptitle('Red Wine - quality & volatile acidity ', fontsize=15)
-                sns.boxplot(orient='v', data=df_red, y="volatile_acidity", x="quality")
-                #sns.stripplot(data=df_red, y="volatile_acidity", x="quality")
+                sns.boxplot(orient='v', data=redwines, y="volatile_acidity", x="quality")
+                #sns.stripplot(data=redwines, y="volatile_acidity", x="quality")
 
                 plt.figure(figsize=(6, 4))
                 plt.suptitle('Red Wine - quality & citric acid', fontsize=15)
-                sns.boxplot(orient='v', data=df_red, y="citric_acid", x="quality")
-                #sns.stripplot(data=df_red, y="citric_acid", x="quality")
+                sns.boxplot(orient='v', data=redwines, y="citric_acid", x="quality")
+                #sns.stripplot(data=redwines, y="citric_acid", x="quality")
                 plt.show()
 
             elif option == 12:
 
                 plt.figure(figsize=(6, 4))
                 plt.suptitle('White wine - quality & alcohol', fontsize=15)
-                sns.boxplot(orient='v', data=df_white, y="alcohol", x="quality")
-                #sns.stripplot(data=df_white, y="alcohol", x="quality")
+                sns.boxplot(orient='v', data=whitewines, y="alcohol", x="quality")
+                #sns.stripplot(data=whitewines, y="alcohol", x="quality")
 
                 plt.figure(figsize=(6, 4))
                 plt.suptitle('White wine - quality & sulfates', fontsize=15)
-                sns.boxplot(orient='v', data=df_white, y="sulphates", x="quality")
-                #sns.stripplot(data=df_white, y="sulphates", x="quality")
+                sns.boxplot(orient='v', data=whitewines, y="sulphates", x="quality")
+                #sns.stripplot(data=whitewines, y="sulphates", x="quality")
 
                 plt.figure(figsize=(6, 4))
                 plt.suptitle('White wine - quality & pH', fontsize=15)
-                sns.boxplot(orient='v', data=df_white, y="pH", x="quality")
-                #sns.stripplot(data=df_white, y="pH", x="quality")
+                sns.boxplot(orient='v', data=whitewines, y="pH", x="quality")
+                #sns.stripplot(data=whitewines, y="pH", x="quality")
 
                 plt.figure(figsize=(6, 4))
                 plt.suptitle('White wine - quality & density', fontsize=15)
-                sns.boxplot(orient='v', data=df_white, y="density", x="quality")
-                #sns.stripplot(data=df_white, y="density", x="quality")
+                sns.boxplot(orient='v', data=whitewines, y="density", x="quality")
+                #sns.stripplot(data=whitewines, y="density", x="quality")
 
                 plt.show()
 
             elif option == 13:
                 fig, ((ax1, ax2), (ax3,ax4)) = plt.subplots(nrows=2, ncols=2, figsize=(14, 10))
-                sns.regplot(x="alcohol", y="density", data=df_red, ax=ax1, scatter_kws={'s': 2})
-                sns.regplot(x="fixed_acidity", y="density", data=df_red, ax=ax2, scatter_kws={'s': 2})
-                sns.regplot(x="citric_acid", y="fixed_acidity", data=df_red, ax=ax3, scatter_kws={'s': 2})
-                sns.regplot(x="pH", y="fixed_acidity", data=df_red, ax=ax4, scatter_kws={'s': 2})
+                sns.regplot(x="alcohol", y="density", data=redwines, ax=ax1, scatter_kws={'s': 2})
+                sns.regplot(x="fixed_acidity", y="density", data=redwines, ax=ax2, scatter_kws={'s': 2})
+                sns.regplot(x="citric_acid", y="fixed_acidity", data=redwines, ax=ax3, scatter_kws={'s': 2})
+                sns.regplot(x="pH", y="fixed_acidity", data=redwines, ax=ax4, scatter_kws={'s': 2})
                 plt.show()
 
             elif option == 14:
                 fig, ((ax1, ax2) , (ax3,ax4)) = plt.subplots(nrows=2, ncols=2, figsize=(14, 10))
 
-                sns.regplot(x="alcohol", y="density", data=df_white,ax=ax1, scatter_kws={'s': 2})
-                sns.regplot(x="total_sulfur_dioxide", y="density", data=df_white, ax=ax2, scatter_kws={'s': 2})
-                sns.regplot(x="density", y="residual_sugar", data=df_white, ax=ax3, scatter_kws={'s': 2})
-                sns.regplot(x="alcohol", y="residual_sugar", data=df_white, ax=ax4, scatter_kws={'s': 2})
+                sns.regplot(x="alcohol", y="density", data=whitewines,ax=ax1, scatter_kws={'s': 2})
+                sns.regplot(x="total_sulfur_dioxide", y="density", data=whitewines, ax=ax2, scatter_kws={'s': 2})
+                sns.regplot(x="density", y="residual_sugar", data=whitewines, ax=ax3, scatter_kws={'s': 2})
+                sns.regplot(x="alcohol", y="residual_sugar", data=whitewines, ax=ax4, scatter_kws={'s': 2})
                 plt.show()
             elif option ==15:
-                sns.scatterplot(x='free_sulfur_dioxide', y='total_sulfur_dioxide', hue='color', data=df_all)
+                sns.scatterplot(x='free_sulfur_dioxide', y='total_sulfur_dioxide', hue='color', data=wines)
                 plt.figure()
-                sns.scatterplot(x='residual_sugar', y='density', hue='color', data=df_all)
+                sns.scatterplot(x='residual_sugar', y='density', hue='color', data=wines)
                 plt.show()
             else:
                 print("Invalid option")
@@ -336,70 +332,69 @@ while option != 0:
 
         while option != 0:
             if option == 1:
-                print('\n')
-                df_all['color'] = df_all['color'].apply(lambda x: 0 if x == 'W' else 1)
-                print(df_all.head(5))
-
-                # normalizaçao
-                print('\n')
-                scaler = MinMaxScaler()
-                scaler.fit(df_all)
-                scaled_features = scaler.transform(df_all)
-                print(scaled_features)
-
-                # volta a converter em dataframe
-                print('\n')
-                new = pd.DataFrame(data=scaled_features,
-                                   columns=["fixed_acidity",
-                                            "volatile_acidity", "citric_acid", "residual_sugar", "chlorides",
-                                            "free_sulfur_dioxide",
-                                            "total_sulfur_dioxide", "density", "pH", "sulphates", "alcohol", "quality",
-                                            "color"])
-                print(new)
-                print('\n')
-                print(type(scaled_features))
-
-                # graficos antes e depois da normalizaçao
-                plt.figure(figsize=(12, 8))
-                plt.suptitle('Normalized', fontsize=15)
-                sns.distplot(new['quality'])
-
-                plt.figure(figsize=(12, 8))
-                plt.suptitle('Not Normalized', fontsize=15)
-                sns.distplot(df_all['quality'])
-                plt.show()
+                redwines["WineType"] = 0         #Vinho Tinto - 0
+                whitewines["WineType"] = 1       #Vinho Branco - 1
+                print("Red Wine")
+                print(redwines.head())
+                print("\nWhite Wine")
+                print(whitewines.head())
 
             elif option == 2:
-                print('\n')
-                df_all['color'] = df_all['color'].apply(lambda x: 0 if x == 'W' else 1)
-                print(df_all.head(5))
+                wines = pd.concat([redwines, whitewines], axis=0)
+                wines.columns = wines.columns.str.replace(' ', '_')
+                print("\n All wines together")
+                print(wines)
+                redwines = redwines.drop(columns=['WineType'])
+                whitewines = whitewines.drop(columns=['WineType'])
 
-                print('\n')
-                from sklearn.preprocessing import StandardScaler
+            elif option == 3:
+                wines = wines.drop_duplicates()
+                wines = wines.dropna()                    # dropping the rows having NaN values
+                wines = wines.reset_index(drop=True)      # To reset the indices
+                print(wines)
 
-                sc_X = StandardScaler()
-                sc_X = sc_X.fit_transform(df_all)
-                print(sc_X)
+            elif option == 4:
+                wines_norm = wines.copy()
 
-                print('\n')
-                new = pd.DataFrame(data=sc_X,
-                                   columns=["fixed_acidity",
-                                            "volatile_acidity", "citric_acid", "residual_sugar", "chlorides",
-                                            "free_sulfur_dioxide",
-                                            "total_sulfur_dioxide", "density", "pH", "sulphates", "alcohol", "quality",
-                                            "color"])
-                print(new)
-                print('\n')
-                print(type(sc_X))
+                for column in wines_norm[
+                    ['fixed_acidity', 'volatile_acidity', 'citric_acid', 'residual_sugar', 'chlorides',
+                     'free_sulfur_dioxide',
+                     'total_sulfur_dioxide', 'density', 'pH', 'sulphates', 'alcohol']].columns:
+                    wines_norm[column] = (wines_norm[column] -
+                                          wines_norm[column].mean()) / wines_norm[column].std()
 
-                plt.figure(figsize=(12, 8))
-                plt.suptitle('Standardized', fontsize=15)
-                sns.distplot(new['sulphates'])
+                print(wines_norm)
 
-                plt.figure(figsize=(12, 8))
-                sns.distplot(df_all['sulphates'])
-                plt.suptitle('Not Standardized', fontsize=15)
+                # graficos antes e depois da normalizaçao
+                sns.displot(wines_norm['alcohol']).set(title='Normalized')
+                plt.tight_layout()
+                sns.displot(wines['alcohol']).set(title='Not Normalized')
+                plt.tight_layout()
                 plt.show()
+
+                # DISCRETIZE QUALITY TO NOT NORMALIZED DATASET
+                wines_binary = wines.copy()
+                lst = []
+                for row in wines.quality:
+                    if row < wines['quality'].mean():
+                        lst.append(0)
+                    else:
+                        lst.append(1)
+                # 0 = below average
+                # 1 = above average
+                wines_binary['quality_binary'] = lst
+
+                # DISCRETIZE QUALITY TO NORMALIZED DATASET
+                wines_binary_norm = wines_norm.copy()
+                lst = []
+                for row in wines.quality:
+                    if row < wines['quality'].mean():
+                        lst.append(0)
+                    else:
+                        lst.append(1)
+                # 0 = below average
+                # 1 = above average
+                wines_binary_norm['quality_binary'] = lst
 
             else:
                 print("Invalid Option")
@@ -416,8 +411,8 @@ while option != 0:
                 print("\n ")
                 print("\n Red Wine")
 
-                X = df_red.iloc[:, 0:11].values
-                y = df_red.iloc[:, 11:12].values.ravel()
+                X = redwines.iloc[:, 0:11].values
+                y = redwines.iloc[:, 11:12].values.ravel()
 
                 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.5, random_state=0)
 
@@ -438,8 +433,8 @@ while option != 0:
 
                 print("\n ")
                 print("\n White Wine")
-                X = df_white.iloc[:, 0:11].values
-                y = df_white.iloc[:, 11:12].values.ravel()
+                X = whitewines.iloc[:, 0:11].values
+                y = whitewines.iloc[:, 11:12].values.ravel()
 
                 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.5, random_state=0)
 
@@ -463,8 +458,8 @@ while option != 0:
                 print("\n ")
                 print("\n Red Wine")
 
-                X = df_red.iloc[:, 0:11].values
-                y = df_red.iloc[:, 11:12].values.ravel()
+                X = redwines.iloc[:, 0:11].values
+                y = redwines.iloc[:, 11:12].values.ravel()
 
                 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.5, random_state=0)
 
@@ -480,8 +475,8 @@ while option != 0:
 
                 print("\n ")
                 print("\n White Wine")
-                X = df_white.iloc[:, 0:11].values
-                y = df_white.iloc[:, 11:12].values.ravel()
+                X = whitewines.iloc[:, 0:11].values
+                y = whitewines.iloc[:, 11:12].values.ravel()
 
                 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.5, random_state=0)
 
@@ -495,8 +490,8 @@ while option != 0:
                 print(accuracy, "%")
 
             elif option == 3:
-                X = df_red.iloc[:, 0:11].values
-                y = df_red.iloc[:, 11:12].values.ravel()
+                X = redwines.iloc[:, 0:11].values
+                y = redwines.iloc[:, 11:12].values.ravel()
                 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=0)
                 print("Train set:", X_train.shape, y_train.shape)
                 print("Test set:", X_test.shape, y_test.shape)
@@ -520,8 +515,8 @@ while option != 0:
                 plt.ylabel("Cross-validated accuracy")
                 plt.figure()
 
-                X = df_white.iloc[:, 0:11].values
-                y = df_white.iloc[:, 11:12].values.ravel()
+                X = whitewines.iloc[:, 0:11].values
+                y = whitewines.iloc[:, 11:12].values.ravel()
                 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=0)
                 print("Train set:", X_train.shape, y_train.shape)
                 print("Test set:", X_test.shape, y_test.shape)
@@ -546,8 +541,8 @@ while option != 0:
                 plt.show()
             elif option == 4:
 
-                X = df_red.iloc[:, 0:11].values
-                y = df_red.iloc[:, 11:12].values.ravel()
+                X = redwines.iloc[:, 0:11].values
+                y = redwines.iloc[:, 11:12].values.ravel()
                 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=0)
 
                 print("Shape of X_train: ", X_train.shape)
@@ -748,8 +743,8 @@ while option != 0:
                 plt.show()
 
             elif option == 5:
-                X = df_white.iloc[:, 0:11].values
-                y = df_white.iloc[:, 11:12].values.ravel()
+                X = whitewines.iloc[:, 0:11].values
+                y = whitewines.iloc[:, 11:12].values.ravel()
                 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=0)
 
                 print("Shape of X_train: ", X_train.shape)
@@ -956,8 +951,8 @@ while option != 0:
                 from sklearn.model_selection import train_test_split
 
                 print("White Wine")
-                X = df_white.iloc[:, 0:11].values
-                y = df_white.iloc[:, 11:12].values.ravel()
+                X = whitewines.iloc[:, 0:11].values
+                y = whitewines.iloc[:, 11:12].values.ravel()
                 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.5, random_state=0)
 
                 clf = tree.DecisionTreeClassifier()
@@ -967,8 +962,8 @@ while option != 0:
                 print(confusion_matrix(y_test, y_pred))
 
                 print("Red Wine")
-                X = df_red.iloc[:, 0:11].values
-                y = df_red.iloc[:, 11:12].values.ravel()
+                X = redwines.iloc[:, 0:11].values
+                y = redwines.iloc[:, 11:12].values.ravel()
 
                 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.5, random_state=0)
 
@@ -983,8 +978,8 @@ while option != 0:
 
                 print("\n")
                 print("Red Wine")
-                X = df_red.iloc[:, 0:11].values
-                y = df_red.iloc[:, 11:12].values.ravel()
+                X = redwines.iloc[:, 0:11].values
+                y = redwines.iloc[:, 11:12].values.ravel()
                 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=0)
 
                 rf = RandomForestClassifier(max_depth=10, random_state=0)
@@ -995,8 +990,8 @@ while option != 0:
 
                 print("\n")
                 print("White Wine")
-                X = df_white.iloc[:, 0:11].values
-                y = df_white.iloc[:, 11:12].values.ravel()
+                X = whitewines.iloc[:, 0:11].values
+                y = whitewines.iloc[:, 11:12].values.ravel()
                 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.5, random_state=0)
 
                 rf = RandomForestClassifier(max_depth=10, random_state=0)
@@ -1011,8 +1006,8 @@ while option != 0:
                 from sklearn.model_selection import train_test_split
                 from sklearn.metrics import plot_confusion_matrix
 
-                X = df_white.iloc[:, 0:11].values
-                y = df_white.iloc[:, 11:12].values.ravel()
+                X = whitewines.iloc[:, 0:11].values
+                y = whitewines.iloc[:, 11:12].values.ravel()
                 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=0)
 
                 classifier = svm.SVC(kernel='linear', C=0.01).fit(X_train, y_train)
@@ -1038,8 +1033,8 @@ while option != 0:
 
                 print("\n ")
                 print("\n White Wine")
-                X = df_white.iloc[:, 0:11].values
-                y = df_white.iloc[:, 11:12].values.ravel()
+                X = whitewines.iloc[:, 0:11].values
+                y = whitewines.iloc[:, 11:12].values.ravel()
 
                 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.5, random_state=0)
 
@@ -1083,17 +1078,17 @@ while option != 0:
 
                 print("K-Means Clustering")
                 rf = k_means = cluster.KMeans(n_clusters=2)
-                clf = rf.fit(df_white)
+                clf = rf.fit(whitewines)
                 centroids = clf.cluster_centers_
-                accuracykmc = silhouette_score(df_white, clf.labels_) * 100
+                accuracykmc = silhouette_score(whitewines, clf.labels_) * 100
                 print(centroids)
                 print(accuracykmc, "%")
 
                 print("Perceptron Classification")
 
                 scaler = MinMaxScaler()
-                scaler.fit(df_white.iloc[:, 0:11])
-                scaled_features = scaler.transform(df_white.iloc[:, 0:11])
+                scaler.fit(whitewines.iloc[:, 0:11])
+                scaled_features = scaler.transform(whitewines.iloc[:, 0:11])
                 print(scaled_features)
 
                 # volta a converter em dataframe
@@ -1106,7 +1101,7 @@ while option != 0:
                 print(new)
 
                 X = new.iloc[:, 0:11].values
-                y = df_white.iloc[:, 11:12].values.ravel()
+                y = whitewines.iloc[:, 11:12].values.ravel()
 
                 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=0)
 
@@ -1142,8 +1137,8 @@ while option != 0:
 
                 print("\n ")
                 print("\n Red Wine")
-                X = df_red.iloc[:, 0:11].values
-                y = df_red.iloc[:, 11:12].values.ravel()
+                X = redwines.iloc[:, 0:11].values
+                y = redwines.iloc[:, 11:12].values.ravel()
 
                 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.5, random_state=0)
 
@@ -1187,17 +1182,17 @@ while option != 0:
 
                 print("K-Means Clustering")
                 rf = k_means = cluster.KMeans(n_clusters=2)
-                clf = rf.fit(df_red)
+                clf = rf.fit(redwines)
                 centroids = clf.cluster_centers_
-                accuracykmc = silhouette_score(df_red, clf.labels_) * 100
+                accuracykmc = silhouette_score(redwines, clf.labels_) * 100
                 print(centroids)
                 print(accuracykmc, "%")
 
                 print("Perceptron Classification")
 
                 scaler = MinMaxScaler()
-                scaler.fit(df_red.iloc[:, 0:11])
-                scaled_features = scaler.transform(df_red.iloc[:, 0:11])
+                scaler.fit(redwines.iloc[:, 0:11])
+                scaled_features = scaler.transform(redwines.iloc[:, 0:11])
                 print(scaled_features)
 
                 # volta a converter em dataframe
@@ -1210,7 +1205,7 @@ while option != 0:
                 print(new)
 
                 X = new.iloc[:, 0:11].values
-                y = df_red.iloc[:, 11:12].values.ravel()
+                y = redwines.iloc[:, 11:12].values.ravel()
 
                 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=0)
 
@@ -1242,8 +1237,8 @@ while option != 0:
                 plt.show()
             elif option == 11:
 
-                X = df_white.iloc[:, 0:11].values
-                y = df_white.iloc[:, 11:12].values.ravel()
+                X = whitewines.iloc[:, 0:11].values
+                y = whitewines.iloc[:, 11:12].values.ravel()
 
                 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=0)
 
@@ -1327,8 +1322,8 @@ while option != 0:
                 print(dff)
 
             elif option == 12:
-                X = df_red.iloc[:, 0:11].values
-                y = df_red.iloc[:, 11:12].values.ravel()
+                X = redwines.iloc[:, 0:11].values
+                y = redwines.iloc[:, 11:12].values.ravel()
 
                 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=0)
 
@@ -1419,15 +1414,15 @@ while option != 0:
                 from sklearn import cluster
                 from sklearn.metrics import silhouette_score
 
-                X = df_white.iloc[:, 0:11].values
-                y = df_white.iloc[:, 11:12].values.ravel()
+                X = whitewines.iloc[:, 0:11].values
+                y = whitewines.iloc[:, 11:12].values.ravel()
 
                 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=0)
 
                 rf = k_means = cluster.KMeans(n_clusters=2)
-                clf = rf.fit(df_white)
+                clf = rf.fit(whitewines)
                 centroids = clf.cluster_centers_
-                score = silhouette_score(df_white, clf.labels_)
+                score = silhouette_score(whitewines, clf.labels_)
                 print(centroids)
                 print(score)
 
@@ -1435,15 +1430,15 @@ while option != 0:
                 from sklearn import cluster
                 from sklearn.metrics import silhouette_score
 
-                X = df_red.iloc[:, 0:11].values
-                y = df_red.iloc[:, 11:12].values.ravel()
+                X = redwines.iloc[:, 0:11].values
+                y = redwines.iloc[:, 11:12].values.ravel()
 
                 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=0)
 
                 rf = k_means = cluster.KMeans(n_clusters=2)
-                clf = rf.fit(df_red)
+                clf = rf.fit(redwines)
                 centroids = clf.cluster_centers_
-                score = silhouette_score(df_red, clf.labels_)
+                score = silhouette_score(redwines, clf.labels_)
                 print(centroids)
                 print(score)
 
@@ -1496,8 +1491,8 @@ while option != 0:
                 from sklearn.model_selection import train_test_split
 
                 scaler = MinMaxScaler()
-                scaler.fit(df_red.iloc[:, 0:11])
-                scaled_features = scaler.transform(df_red.iloc[:, 0:11])
+                scaler.fit(redwines.iloc[:, 0:11])
+                scaled_features = scaler.transform(redwines.iloc[:, 0:11])
                 print(scaled_features)
 
                 # volta a converter em dataframe
@@ -1510,7 +1505,7 @@ while option != 0:
                 print(new)
 
                 X = new.iloc[:, 0:11].values
-                y = df_red.iloc[:, 11:12].values.ravel()
+                y = redwines.iloc[:, 11:12].values.ravel()
 
                 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=0)
 
@@ -1526,8 +1521,8 @@ while option != 0:
                 from sklearn.model_selection import train_test_split
 
                 scaler = MinMaxScaler()
-                scaler.fit(df_white.iloc[:, 0:11])
-                scaled_features = scaler.transform(df_white.iloc[:, 0:11])
+                scaler.fit(whitewines.iloc[:, 0:11])
+                scaled_features = scaler.transform(whitewines.iloc[:, 0:11])
                 print(scaled_features)
 
                 # volta a converter em dataframe
@@ -1540,7 +1535,7 @@ while option != 0:
                 print(new)
 
                 X = new.iloc[:, 0:11].values
-                y = df_white.iloc[:, 11:12].values.ravel()
+                y = whitewines.iloc[:, 11:12].values.ravel()
 
                 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=0)
 
@@ -1556,8 +1551,8 @@ while option != 0:
                     print("\n")
                     print("\n Red Wine")
 
-                    X = df_red.iloc[:, 0:11].values
-                    y = df_red.iloc[:, 11:12].values.ravel()
+                    X = redwines.iloc[:, 0:11].values
+                    y = redwines.iloc[:, 11:12].values.ravel()
 
                     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.5, random_state=0)
 
@@ -1581,8 +1576,8 @@ while option != 0:
                     print("\n")
                     print("\nRed Wine")
 
-                    X = df_red.iloc[:, 0:11].values
-                    y = df_red.iloc[:, 11:12].values.ravel()
+                    X = redwines.iloc[:, 0:11].values
+                    y = redwines.iloc[:, 11:12].values.ravel()
 
                     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.5, random_state=0)
 
@@ -1600,8 +1595,8 @@ while option != 0:
                     from sklearn import tree
 
                     print("Red Wine")
-                    X = df_red.iloc[:, 0:11].values
-                    y = df_red.iloc[:, 11:12].values.ravel()
+                    X = redwines.iloc[:, 0:11].values
+                    y = redwines.iloc[:, 11:12].values.ravel()
 
                     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.5, random_state=0)
 
@@ -1614,8 +1609,8 @@ while option != 0:
                 def rf():
                     print("\n")
                     print("Red Wine")
-                    X = df_red.iloc[:, 0:11].values
-                    y = df_red.iloc[:, 11:12].values.ravel()
+                    X = redwines.iloc[:, 0:11].values
+                    y = redwines.iloc[:, 11:12].values.ravel()
                     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=0)
 
                     rf = RandomForestClassifier(max_depth=10, random_state=0)
@@ -1629,13 +1624,13 @@ while option != 0:
                     from sklearn import cluster
                     from sklearn.metrics import silhouette_score
 
-                    X = df_red.iloc[:, 0:11].values
-                    y = df_red.iloc[:, 11:12].values.ravel()
+                    X = redwines.iloc[:, 0:11].values
+                    y = redwines.iloc[:, 11:12].values.ravel()
                     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=0)
                     rf = k_means = cluster.KMeans(n_clusters=2)
-                    clf = rf.fit(df_red)
+                    clf = rf.fit(redwines)
                     centroids = clf.cluster_centers_
-                    score = silhouette_score(df_red, clf.labels_)
+                    score = silhouette_score(redwines, clf.labels_)
                     print(centroids)
                     print(score)
 
@@ -1645,8 +1640,8 @@ while option != 0:
                     from sklearn.model_selection import train_test_split
 
                     scaler = MinMaxScaler()
-                    scaler.fit(df_red.iloc[:, 0:11])
-                    scaled_features = scaler.transform(df_red.iloc[:, 0:11])
+                    scaler.fit(redwines.iloc[:, 0:11])
+                    scaled_features = scaler.transform(redwines.iloc[:, 0:11])
                     print(scaled_features)
 
                     # volta a converter em dataframe
@@ -1659,7 +1654,7 @@ while option != 0:
                     print(new)
 
                     X = new.iloc[:, 0:11].values
-                    y = df_red.iloc[:, 11:12].values.ravel()
+                    y = redwines.iloc[:, 11:12].values.ravel()
 
                     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=0)
 
@@ -1736,8 +1731,8 @@ while option != 0:
                     print("\n ")
                     print("\n White Wine")
 
-                    X = df_white.iloc[:, 0:11].values
-                    y = df_white.iloc[:, 11:12].values.ravel()
+                    X = whitewines.iloc[:, 0:11].values
+                    y = whitewines.iloc[:, 11:12].values.ravel()
 
                     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.5, random_state=0)
 
@@ -1761,8 +1756,8 @@ while option != 0:
                     print("\n ")
                     print("\n White Wine")
 
-                    X = df_white.iloc[:, 0:11].values
-                    y = df_white.iloc[:, 11:12].values.ravel()
+                    X = whitewines.iloc[:, 0:11].values
+                    y = whitewines.iloc[:, 11:12].values.ravel()
 
                     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.5, random_state=0)
 
@@ -1781,8 +1776,8 @@ while option != 0:
                     from sklearn import tree
 
                     print("White Wine")
-                    X = df_white.iloc[:, 0:11].values
-                    y = df_white.iloc[:, 11:12].values.ravel()
+                    X = whitewines.iloc[:, 0:11].values
+                    y = whitewines.iloc[:, 11:12].values.ravel()
 
                     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.5, random_state=0)
 
@@ -1796,8 +1791,8 @@ while option != 0:
                 def rf():
                     print("\n")
                     print("White Wine")
-                    X = df_white.iloc[:, 0:11].values
-                    y = df_white.iloc[:, 11:12].values.ravel()
+                    X = whitewines.iloc[:, 0:11].values
+                    y = whitewines.iloc[:, 11:12].values.ravel()
                     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=0)
 
                     rf = RandomForestClassifier(max_depth=10, random_state=0)
@@ -1810,13 +1805,13 @@ while option != 0:
                     from sklearn import cluster
                     from sklearn.metrics import silhouette_score
 
-                    X = df_white.iloc[:, 0:11].values
-                    y = df_white.iloc[:, 11:12].values.ravel()
+                    X = whitewines.iloc[:, 0:11].values
+                    y = whitewines.iloc[:, 11:12].values.ravel()
                     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=0)
                     rf = k_means = cluster.KMeans(n_clusters=2)
-                    clf = rf.fit(df_red)
+                    clf = rf.fit(redwines)
                     centroids = clf.cluster_centers_
-                    score = silhouette_score(df_red, clf.labels_)
+                    score = silhouette_score(redwines, clf.labels_)
                     print(centroids)
                     print(score)
 
@@ -1826,8 +1821,8 @@ while option != 0:
                     from sklearn.model_selection import train_test_split
 
                     scaler = MinMaxScaler()
-                    scaler.fit(df_white.iloc[:, 0:11])
-                    scaled_features = scaler.transform(df_white.iloc[:, 0:11])
+                    scaler.fit(whitewines.iloc[:, 0:11])
+                    scaled_features = scaler.transform(whitewines.iloc[:, 0:11])
                     print(scaled_features)
 
                     # volta a converter em dataframe
@@ -1840,7 +1835,7 @@ while option != 0:
                     print(new)
 
                     X = new.iloc[:, 0:11].values
-                    y = df_white.iloc[:, 11:12].values.ravel()
+                    y = whitewines.iloc[:, 11:12].values.ravel()
 
                     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=0)
 
