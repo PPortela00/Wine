@@ -147,11 +147,16 @@ while option != 0:
                 print(df_white.info())
 
             elif option == 3:
-                nulos= df_all.isnull().sum()
+                nulos_red = df_red.isnull().sum()
+                nulos_white = df_white.isnull().sum()
                 print('\n')
-                print(nulos)
+                print('Red wine dataset')
+                print(nulos_red)
                 print('\n')
-                print("There are no null values in this dataset!!!")
+                print('White wine dataset')
+                print(nulos_white)
+                print('\n')
+                print("There are no null values in both datasets!!!")
 
             elif option == 4:
                 print("\n")
@@ -161,13 +166,6 @@ while option != 0:
                 print("White Wine")
                 print(df_red.describe())
                 print("\n")
-                print("Both wines")
-                print(df_all.describe())
-                print("\n")
-
-                d = {'Cor': ['Vinho Tinto', 'Vinho Branco'], 'Qualidade_media': [df_red["quality"].mean(), df_white["quality"].mean()], 'Qualidade_Maxima': [df_red["quality"].max(), df_white["quality"].max()],'Qualidade_Minima': [df_red["quality"].min(), df_white["quality"].min()]}
-                df = pd.DataFrame(data=d)
-                print(df)
 
             elif option == 5:
                 df_red.hist()
