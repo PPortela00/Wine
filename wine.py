@@ -23,6 +23,7 @@ from sklearn.model_selection import train_test_split
 from timeit import timeit
 from sklearn import datasets, tree
 
+
 pd.set_option('display.max_columns', None)                  #para poder visualizar todas as colunas no display
 pd.set_option('display.width', 1000)
 
@@ -38,6 +39,7 @@ df_red["color"] = "R"
 df_white["color"] = "W"
 df_all = pd.concat([df_red, df_white], axis=0)
 df_all.columns = df_all.columns.str.replace(' ', '_')       # torna mais facil a utilizaçao das colunas
+df_all['color'] = df_all['color'].apply(lambda x: 0 if x == 'W' else 1)
 
 def menu():
     print("--------- Initial Menu ---------")
@@ -89,7 +91,7 @@ def submenu3():
     print("------ Modeling (ML Algorithms Application) Menu ------")
     print("[1] NaiveBayes")
     print("[2] Knn")
-    print("[2] Better k for the KNN")
+    print("[3] Better k for the KNN")
     print("[4] Cross-Validation and Training and Test Set - Red Wine")
     print("[5] Cross-Validation and Training and Test Set - White Wine")
     print("[6] Decision Tree - Classification")
@@ -309,6 +311,7 @@ while option != 0:
                 sns.regplot(x="fixed_acidity", y="density", data=df_red, ax=ax2, scatter_kws={'s': 2})
                 sns.regplot(x="citric_acid", y="fixed_acidity", data=df_red, ax=ax3, scatter_kws={'s': 2})
                 sns.regplot(x="pH", y="fixed_acidity", data=df_red, ax=ax4, scatter_kws={'s': 2})
+                plt.suptitle('Red Wine - Interesting Correlations', fontsize=15)
                 plt.show()
 
             elif option == 14:
@@ -318,11 +321,15 @@ while option != 0:
                 sns.regplot(x="total_sulfur_dioxide", y="density", data=df_white, ax=ax2, scatter_kws={'s': 2})
                 sns.regplot(x="density", y="residual_sugar", data=df_white, ax=ax3, scatter_kws={'s': 2})
                 sns.regplot(x="alcohol", y="residual_sugar", data=df_white, ax=ax4, scatter_kws={'s': 2})
+                plt.suptitle('White Wine - Interesting Correlations', fontsize=15)
                 plt.show()
-            elif option ==15:
+
+            elif option == 15:
                 sns.scatterplot(x='free_sulfur_dioxide', y='total_sulfur_dioxide', hue='color', data=df_all)
+                plt.suptitle('All Wines - Free Sulfur Dioxide vs Total Sulfur Dioxide', fontsize=15)
                 plt.figure()
                 sns.scatterplot(x='residual_sugar', y='density', hue='color', data=df_all)
+                plt.suptitle('All Wines - Residual Sugar vs Density', fontsize=15)
                 plt.show()
             else:
                 print("Invalid option")
@@ -337,7 +344,6 @@ while option != 0:
         while option != 0:
             if option == 1:
                 print('\n')
-                df_all['color'] = df_all['color'].apply(lambda x: 0 if x == 'W' else 1)
                 print(df_all.head(5))
 
                 # normalizaçao
@@ -360,18 +366,12 @@ while option != 0:
                 print(type(scaled_features))
 
                 # graficos antes e depois da normalizaçao
-                plt.figure(figsize=(12, 8))
-                plt.suptitle('Normalized', fontsize=15)
-                sns.distplot(new['quality'])
-
-                plt.figure(figsize=(12, 8))
-                plt.suptitle('Not Normalized', fontsize=15)
-                sns.distplot(df_all['quality'])
+                sns.displot(new['quality']).set(title='Normalized')
+                sns.displot(df_all['quality']).set(title='Not Normalized')
                 plt.show()
 
             elif option == 2:
                 print('\n')
-                df_all['color'] = df_all['color'].apply(lambda x: 0 if x == 'W' else 1)
                 print(df_all.head(5))
 
                 print('\n')
@@ -392,13 +392,8 @@ while option != 0:
                 print('\n')
                 print(type(sc_X))
 
-                plt.figure(figsize=(12, 8))
-                plt.suptitle('Standardized', fontsize=15)
-                sns.distplot(new['sulphates'])
-
-                plt.figure(figsize=(12, 8))
-                sns.distplot(df_all['sulphates'])
-                plt.suptitle('Not Standardized', fontsize=15)
+                sns.displot(new['sulphates']).set(title='Standardized')
+                sns.displot(df_all['quality']).set(title='Not Standardized')
                 plt.show()
 
             else:
@@ -413,8 +408,7 @@ while option != 0:
 
         while option != 0:
             if option == 1:
-                print("\n ")
-                print("\n Red Wine")
+                print("\nRed Wine")
 
                 X = df_red.iloc[:, 0:11].values
                 y = df_red.iloc[:, 11:12].values.ravel()
@@ -436,8 +430,7 @@ while option != 0:
                 accuracy = ((y_test != y_pred).sum() / X_test.shape[0]) * 100
                 print(accuracy, "%")
 
-                print("\n ")
-                print("\n White Wine")
+                print("\nWhite Wine")
                 X = df_white.iloc[:, 0:11].values
                 y = df_white.iloc[:, 11:12].values.ravel()
 
@@ -460,8 +453,7 @@ while option != 0:
                 predict = pd.DataFrame(data=models, columns=['Model', 'KNN'])
                 print(predict)
             elif option == 2:
-                print("\n ")
-                print("\n Red Wine")
+                print("\nRed Wine")
 
                 X = df_red.iloc[:, 0:11].values
                 y = df_red.iloc[:, 11:12].values.ravel()
@@ -478,8 +470,7 @@ while option != 0:
                 accuracy = ((y_test != y_pred).sum() / X_test.shape[0]) * 100
                 print(accuracy, "%")
 
-                print("\n ")
-                print("\n White Wine")
+                print("\nWhite Wine")
                 X = df_white.iloc[:, 0:11].values
                 y = df_white.iloc[:, 11:12].values.ravel()
 
@@ -498,7 +489,7 @@ while option != 0:
                 X = df_red.iloc[:, 0:11].values
                 y = df_red.iloc[:, 11:12].values.ravel()
                 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=0)
-                print("Train set:", X_train.shape, y_train.shape)
+                print("\nTrain set:", X_train.shape, y_train.shape)
                 print("Test set:", X_test.shape, y_test.shape)
 
                 from sklearn.neighbors import KNeighborsClassifier
@@ -510,12 +501,13 @@ while option != 0:
                 # Calculate cross validation score for every k number from 1 to 50
                 for k in k_range:
                     knn = KNeighborsClassifier(n_neighbors=k)
-                    # It’s 10 fold cross validation with ‘accuracy’ scoring
-                    scores = cross_val_score(knn, X, y, cv=10, scoring="accuracy")
+                    # It’s 5 fold cross validation with ‘accuracy’ scoring
+                    scores = cross_val_score(knn, X, y, cv=5, scoring="accuracy")
                     k_scores.append(scores.mean())
 
                 # Plot accuracy for every k number between 1 and 50
                 plt.plot(k_range, k_scores)
+                plt.suptitle("Best k for KNN - Red Wine")
                 plt.xlabel("Value of K for KNN - Red Wine")
                 plt.ylabel("Cross-validated accuracy")
                 plt.figure()
@@ -523,7 +515,7 @@ while option != 0:
                 X = df_white.iloc[:, 0:11].values
                 y = df_white.iloc[:, 11:12].values.ravel()
                 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=0)
-                print("Train set:", X_train.shape, y_train.shape)
+                print("\nTrain set:", X_train.shape, y_train.shape)
                 print("Test set:", X_test.shape, y_test.shape)
 
                 from sklearn.neighbors import KNeighborsClassifier
@@ -535,12 +527,13 @@ while option != 0:
                 # Calculate cross validation score for every k number from 1 to 50
                 for k in k_range:
                     knn = KNeighborsClassifier(n_neighbors=k)
-                    # It’s 10 fold cross validation with ‘accuracy’ scoring
-                    scores = cross_val_score(knn, X, y, cv=10, scoring="accuracy")
+                    # It’s 5 fold cross validation with ‘accuracy’ scoring
+                    scores = cross_val_score(knn, X, y, cv=5, scoring="accuracy")
                     k_scores.append(scores.mean())
 
                 # Plot accuracy for every k number between 1 and 50
                 plt.plot(k_range, k_scores)
+                plt.suptitle("Best k for KNN - White Wine")
                 plt.xlabel("Value of K for KNN - White Wine")
                 plt.ylabel("Cross-validated accuracy")
                 plt.show()
@@ -570,7 +563,7 @@ while option != 0:
                 print("\n")
                 print("KNN")
                 # Predicting Cross Validation Score
-                cv_knn = cross_val_score(estimator=classifier_knn, X=X_train_scaled, y=y_train.ravel(), cv=10)
+                cv_knn = cross_val_score(estimator=classifier_knn, X=X_train_scaled, y=y_train.ravel(), cv=5)
                 print("CV: ", cv_knn.mean())
 
                 y_pred_knn_train = classifier_knn.predict(X_train_scaled)
@@ -597,7 +590,7 @@ while option != 0:
                 print("\n")
                 print("NaiveBayes")
                 # Predicting Cross Validation Score
-                cv_nb = cross_val_score(estimator=classifier_nb, X=X_train_scaled, y=y_train.ravel(), cv=10)
+                cv_nb = cross_val_score(estimator=classifier_nb, X=X_train_scaled, y=y_train.ravel(), cv=5)
                 print("CV: ", cv_nb.mean())
 
                 y_pred_nb_train = classifier_nb.predict(X_train_scaled)
@@ -623,7 +616,7 @@ while option != 0:
                                                        random_state=33)
                 classifier_dt.fit(X_train_scaled, y_train.ravel())
                 # Predicting Cross Validation Score
-                cv_dt = cross_val_score(estimator=classifier_dt, X=X_train_scaled, y=y_train.ravel(), cv=10)
+                cv_dt = cross_val_score(estimator=classifier_dt, X=X_train_scaled, y=y_train.ravel(), cv=5)
                 print("CV: ", cv_dt.mean())
 
                 y_pred_dt_train = classifier_dt.predict(X_train_scaled)
@@ -650,7 +643,7 @@ while option != 0:
                 classifier_rf.fit(X_train_scaled, y_train.ravel())
 
                 # Predicting Cross Validation Score
-                cv_rf = cross_val_score(estimator=classifier_rf, X=X_train_scaled, y=y_train.ravel(), cv=10)
+                cv_rf = cross_val_score(estimator=classifier_rf, X=X_train_scaled, y=y_train.ravel(), cv=5)
                 print("CV: ", cv_rf.mean())
 
                 y_pred_rf_train = classifier_rf.predict(X_train_scaled)
@@ -676,7 +669,7 @@ while option != 0:
                 y_pred = clf.predict(X_test)
 
                 # Predicting Cross Validation Score
-                cv_pc = cross_val_score(estimator=clf, X=X_train_scaled, y=y_train.ravel(), cv=10)
+                cv_pc = cross_val_score(estimator=clf, X=X_train_scaled, y=y_train.ravel(), cv=5)
                 print("CV: ", cv_pc.mean())
 
                 y_pred_pc_train = clf.predict(X_train_scaled)
@@ -717,6 +710,7 @@ while option != 0:
 
                 sns.barplot(x='Cross-Validation', y='Model', data=predict, ax=axe)
                 # axes[0].set(xlabel='Region', ylabel='Charges')
+                axe.set_title('Cross-Validation Scores for the Models - Red Wine')
                 axe.set_xlabel('Cross-Validaton Score', size=16)
                 axe.set_ylabel('Model')
                 axe.set_xlim(0, 1.0)
@@ -729,6 +723,7 @@ while option != 0:
 
                 sns.barplot(x='Precision(training)', y='Model', data=predict, palette='Blues_d', ax=axes[0])
                 # axes[0].set(xlabel='Region', ylabel='Charges')
+                axe.set_title('Training Precisions for the Models - Red Wine')
                 axes[0].set_xlabel('Precision (Training)', size=16)
                 axes[0].set_ylabel('Model')
                 axes[0].set_xlim(0, 1.0)
@@ -740,6 +735,7 @@ while option != 0:
 
                 sns.barplot(x='Precision(test)', y='Model', data=predict, palette='Reds_d', ax=axes[1])
                 # axes[0].set(xlabel='Region', ylabel='Charges')
+                axe.set_title('Test Precisions for the Models - Red Wine')
                 axes[1].set_xlabel('Precision (Test)', size=16)
                 axes[1].set_ylabel('Model')
                 axes[1].set_xlim(0, 1.0)
@@ -772,7 +768,7 @@ while option != 0:
                 print("\n")
                 print("KNN")
                 # Predicting Cross Validation Score
-                cv_knn = cross_val_score(estimator=classifier_knn, X=X_train_scaled, y=y_train.ravel(), cv=10)
+                cv_knn = cross_val_score(estimator=classifier_knn, X=X_train_scaled, y=y_train.ravel(), cv=5)
                 print("CV: ", cv_knn.mean())
 
                 y_pred_knn_train = classifier_knn.predict(X_train_scaled)
@@ -799,7 +795,7 @@ while option != 0:
                 print("\n")
                 print("NaiveBayes")
                 # Predicting Cross Validation Score
-                cv_nb = cross_val_score(estimator=classifier_nb, X=X_train_scaled, y=y_train.ravel(), cv=10)
+                cv_nb = cross_val_score(estimator=classifier_nb, X=X_train_scaled, y=y_train.ravel(), cv=5)
                 print("CV: ", cv_nb.mean())
 
                 y_pred_nb_train = classifier_nb.predict(X_train_scaled)
@@ -825,7 +821,7 @@ while option != 0:
                                                        random_state=33)
                 classifier_dt.fit(X_train_scaled, y_train.ravel())
                 # Predicting Cross Validation Score
-                cv_dt = cross_val_score(estimator=classifier_dt, X=X_train_scaled, y=y_train.ravel(), cv=10)
+                cv_dt = cross_val_score(estimator=classifier_dt, X=X_train_scaled, y=y_train.ravel(), cv=5)
                 print("CV: ", cv_dt.mean())
 
                 y_pred_dt_train = classifier_dt.predict(X_train_scaled)
@@ -852,7 +848,7 @@ while option != 0:
                 classifier_rf.fit(X_train_scaled, y_train.ravel())
 
                 # Predicting Cross Validation Score
-                cv_rf = cross_val_score(estimator=classifier_rf, X=X_train_scaled, y=y_train.ravel(), cv=10)
+                cv_rf = cross_val_score(estimator=classifier_rf, X=X_train_scaled, y=y_train.ravel(), cv=5)
                 print("CV: ", cv_rf.mean())
 
                 y_pred_rf_train = classifier_rf.predict(X_train_scaled)
@@ -878,7 +874,7 @@ while option != 0:
                 y_pred = clf.predict(X_test)
 
                 # Predicting Cross Validation Score
-                cv_pc = cross_val_score(estimator=clf, X=X_train_scaled, y=y_train.ravel(), cv=10)
+                cv_pc = cross_val_score(estimator=clf, X=X_train_scaled, y=y_train.ravel(), cv=5)
                 print("CV: ", cv_pc.mean())
 
                 y_pred_pc_train = clf.predict(X_train_scaled)
@@ -920,6 +916,7 @@ while option != 0:
 
                 sns.barplot(x='Cross-Validation', y='Model', data=predict, ax=axe)
                 # axes[0].set(xlabel='Region', ylabel='Charges')
+                axe.set_title('Cross-Validation scores for the Models - White Wine')
                 axe.set_xlabel('Cross-Validaton Score', size=16)
                 axe.set_ylabel('Model')
                 axe.set_xlim(0, 1.0)
@@ -932,6 +929,7 @@ while option != 0:
 
                 sns.barplot(x='Precision(training)', y='Model', data=predict, palette='Blues_d', ax=axes[0])
                 # axes[0].set(xlabel='Region', ylabel='Charges')
+                axe.set_title('Training Precisions for the Models - White Wine')
                 axes[0].set_xlabel('Precision (Training)', size=16)
                 axes[0].set_ylabel('Model')
                 axes[0].set_xlim(0, 1.0)
@@ -943,6 +941,7 @@ while option != 0:
 
                 sns.barplot(x='Precision(test)', y='Model', data=predict, palette='Reds_d', ax=axes[1])
                 # axes[0].set(xlabel='Region', ylabel='Charges')
+                axe.set_title('Test Precisions for the Models - White Wine')
                 axes[1].set_xlabel('Precision (Test)', size=16)
                 axes[1].set_ylabel('Model')
                 axes[1].set_xlim(0, 1.0)
@@ -978,9 +977,7 @@ while option != 0:
                 print(clf.score(X_test, y_test) * 100, "%")
                 print(confusion_matrix(y_test, y_pred))
 
-
             elif option == 7:
-
                 print("\n")
                 print("Red Wine")
                 X = df_red.iloc[:, 0:11].values
@@ -1006,7 +1003,6 @@ while option != 0:
                 print(confusion_matrix(y_test, y_pred))
 
             elif option == 8:
-
                 from sklearn import svm, datasets
                 from sklearn.model_selection import train_test_split
                 from sklearn.metrics import plot_confusion_matrix
@@ -1292,9 +1288,6 @@ while option != 0:
                 cv_rf = cross_val_score(estimator=classifier_rf, X=X_train_scaled, y=y_train.ravel(), cv=5)
                 print("CV:", cv_rf)
                 print("MEAN:", cv_rf.mean())
-
-                print("\n")
-                print("K-Means Clustering")
 
                 print("\n")
                 print("Perceptron Classification")
