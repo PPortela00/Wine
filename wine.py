@@ -320,9 +320,11 @@ while option != 0:
                 sns.regplot(x="alcohol", y="residual_sugar", data=df_white, ax=ax4, scatter_kws={'s': 2})
                 plt.show()
             elif option ==15:
-                sns.scatterplot(x='free_sulfur_dioxide', y='total_sulfur_dioxide', hue='color', data=df_all)
+                sns.pairplot(df_red)
+                #sns.scatterplot(x='free_sulfur_dioxide', y='total_sulfur_dioxide', hue='color', data=df_all)
                 plt.figure()
-                sns.scatterplot(x='residual_sugar', y='density', hue='color', data=df_all)
+                sns.pairplot(df_white)
+                #sns.scatterplot(x='residual_sugar', y='density', hue='color', data=df_all)
                 plt.show()
             else:
                 print("Invalid option")
