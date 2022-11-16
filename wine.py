@@ -320,12 +320,12 @@ while option != 0:
                 plt.show()
 
             elif option == 15:
-                sns.scatterplot(x='free_sulfur_dioxide', y='total_sulfur_dioxide', data=redwines)
-                #scatter_matrix(redwines, alpha = 1.0, figsize = (12, 12*1.61), diagonal = 'hist')
+                #sns.scatterplot(x='free_sulfur_dioxide', y='total_sulfur_dioxide', data=redwines)
+                scatter_matrix(redwines, alpha = 1.0, figsize = (12, 12*1.61), diagonal = 'hist')
                 plt.suptitle('Red Wine - scatterplot of all attributes', fontsize=13)
                 plt.figure()
-                sns.scatterplot(x='residual_sugar', y='density', data=whitewines)
-                #scatter_matrix(whitewines, alpha = 1.0, figsize = (12, 12*1.61), diagonal = 'hist')
+                #sns.scatterplot(x='residual_sugar', y='density', data=whitewines)
+                scatter_matrix(whitewines, alpha = 1.0, figsize = (12, 12*1.61), diagonal = 'hist')
                 plt.suptitle('White Wine - scatterplot of all attributes', fontsize=13)
                 plt.show()
 
