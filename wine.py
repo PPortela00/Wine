@@ -307,27 +307,28 @@ while option != 0:
                 sns.regplot(x="fixed_acidity", y="density", data=redwines, ax=ax2, scatter_kws={'s': 2})
                 sns.regplot(x="citric_acid", y="fixed_acidity", data=redwines, ax=ax3, scatter_kws={'s': 2})
                 sns.regplot(x="pH", y="fixed_acidity", data=redwines, ax=ax4, scatter_kws={'s': 2})
+                plt.suptitle("Red Wine - Interesting correlations")
                 plt.show()
 
             elif option == 14:
                 fig, ((ax1, ax2) , (ax3,ax4)) = plt.subplots(nrows=2, ncols=2, figsize=(14, 10))
-
                 sns.regplot(x="alcohol", y="density", data=whitewines,ax=ax1, scatter_kws={'s': 2})
                 sns.regplot(x="total_sulfur_dioxide", y="density", data=whitewines, ax=ax2, scatter_kws={'s': 2})
                 sns.regplot(x="density", y="residual_sugar", data=whitewines, ax=ax3, scatter_kws={'s': 2})
                 sns.regplot(x="alcohol", y="residual_sugar", data=whitewines, ax=ax4, scatter_kws={'s': 2})
+                plt.suptitle("Red Wine - Interesting correlations")
                 plt.show()
-            elif option ==15:
-                sns.scatterplot(x='free_sulfur_dioxide', y='total_sulfur_dioxide', hue='color', data=wines)
-                scatter_matrix(redwines, alpha = 1.0, figsize = (12, 12*1.61), diagonal = 'hist')
+
+            elif option == 15:
+                sns.scatterplot(x='free_sulfur_dioxide', y='total_sulfur_dioxide', data=redwines)
+                #scatter_matrix(redwines, alpha = 1.0, figsize = (12, 12*1.61), diagonal = 'hist')
                 plt.suptitle('Red Wine - scatterplot of all attributes', fontsize=13)
-                #sns.scatterplot(x='free_sulfur_dioxide', y='total_sulfur_dioxide', hue='color', data=df_all)
                 plt.figure()
-                sns.scatterplot(x='residual_sugar', y='density', hue='color', data=wines)
-                scatter_matrix(whitewines, alpha = 1.0, figsize = (12, 12*1.61), diagonal = 'hist')
+                sns.scatterplot(x='residual_sugar', y='density', data=whitewines)
+                #scatter_matrix(whitewines, alpha = 1.0, figsize = (12, 12*1.61), diagonal = 'hist')
                 plt.suptitle('White Wine - scatterplot of all attributes', fontsize=13)
-                #sns.scatterplot(x='residual_sugar', y='density', hue='color', data=df_all)
                 plt.show()
+
             else:
                 print("Invalid option")
 
