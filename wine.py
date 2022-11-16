@@ -183,12 +183,15 @@ while option != 0:
                 plt.show()
 
             elif option == 7:
-                sns.boxplot(data=redwines, palette = 'Blues')
-                plt.tight_layout(pad=1.1)
+                b1 = sns.boxplot(data=redwines, palette='Blues')
+                b1.set_xticklabels(b1.get_xticklabels(), rotation=90)
                 plt.suptitle('Red Wine - distribution of the various components', fontsize=13)
-                sns.boxplot(data=redwines, palette = 'Blues')
-                plt.tight_layout(pad=1.1)
+                plt.tight_layout()
+                plt.figure()
+                b2 = sns.boxplot(data=whitewines, palette='Blues')
+                b2.set_xticklabels(b2.get_xticklabels(), rotation=90)
                 plt.suptitle('White Wine - distribution of the various components', fontsize=13)
+                plt.tight_layout()
                 plt.show()
 
             elif option == 8:
@@ -321,11 +324,20 @@ while option != 0:
 
             elif option == 15:
                 #sns.scatterplot(x='free_sulfur_dioxide', y='total_sulfur_dioxide', data=redwines)
-                scatter_matrix(redwines, alpha = 1.0, figsize = (12, 12*1.61), diagonal = 'hist')
+                #scatter_matrix(redwines, alpha = 1.0, figsize = (12, 12*1.61), diagonal = 'hist')
+                axes = pd.plotting.scatter_matrix(redwines, alpha=0.2)
+                for ax in axes.flatten():
+                    ax.xaxis.label.set_rotation(25)
+                    ax.yaxis.label.set_rotation(25)
+                    ax.yaxis.label.set_ha('right')
                 plt.suptitle('Red Wine - scatterplot of all attributes', fontsize=13)
-                plt.figure()
                 #sns.scatterplot(x='residual_sugar', y='density', data=whitewines)
-                scatter_matrix(whitewines, alpha = 1.0, figsize = (12, 12*1.61), diagonal = 'hist')
+                #scatter_matrix(whitewines, alpha = 1.0, figsize = (12, 12*1.61), diagonal = 'hist')
+                axes1 = pd.plotting.scatter_matrix(redwines, alpha=0.2)
+                for ax in axes1.flatten():
+                    ax.xaxis.label.set_rotation(25)
+                    ax.yaxis.label.set_rotation(25)
+                    ax.yaxis.label.set_ha('right')
                 plt.suptitle('White Wine - scatterplot of all attributes', fontsize=13)
                 plt.show()
 
