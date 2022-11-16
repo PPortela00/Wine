@@ -325,7 +325,7 @@ while option != 0:
             elif option == 15:
                 #sns.scatterplot(x='free_sulfur_dioxide', y='total_sulfur_dioxide', data=redwines)
                 #scatter_matrix(redwines, alpha = 1.0, figsize = (12, 12*1.61), diagonal = 'hist')
-                axes = pd.plotting.scatter_matrix(redwines, alpha=0.2)
+                axes = pd.plotting.scatter_matrix(redwines, alpha=1.0)
                 for ax in axes.flatten():
                     ax.xaxis.label.set_rotation(25)
                     ax.yaxis.label.set_rotation(25)
@@ -333,7 +333,7 @@ while option != 0:
                 plt.suptitle('Red Wine - scatterplot of all attributes', fontsize=13)
                 #sns.scatterplot(x='residual_sugar', y='density', data=whitewines)
                 #scatter_matrix(whitewines, alpha = 1.0, figsize = (12, 12*1.61), diagonal = 'hist')
-                axes1 = pd.plotting.scatter_matrix(redwines, alpha=0.2)
+                axes1 = pd.plotting.scatter_matrix(redwines, alpha=1.0)
                 for ax in axes1.flatten():
                     ax.xaxis.label.set_rotation(25)
                     ax.yaxis.label.set_rotation(25)
