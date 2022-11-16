@@ -341,8 +341,8 @@ while option != 0:
 
         while option != 0:
             if option == 1:
-                redwines["WineType"] = 0         #Vinho Tinto - 0
-                whitewines["WineType"] = 1       #Vinho Branco - 1
+                redwines["WineType"] = 0         #Red wine - 0
+                whitewines["WineType"] = 1       #White wine - 1
                 print("Red Wine")
                 print(redwines.head())
                 print("\nWhite Wine")
@@ -372,25 +372,14 @@ while option != 0:
                     wines_norm[column] = (wines_norm[column] -
                                           wines_norm[column].mean()) / wines_norm[column].std()
 
-                print(wines_norm)
-
-                # graficos antes e depois da normalizaçao
-                sns.displot(wines_norm['alcohol']).set(title='Normalized')
-                plt.tight_layout()
-                sns.displot(wines['alcohol']).set(title='Not Normalized')
-                plt.tight_layout()
-                plt.show()
-
                 # DISCRETIZE QUALITY TO NOT NORMALIZED DATASET
                 wines_binary = wines.copy()
                 lst = []
                 for row in wines.quality:
                     if row < wines['quality'].mean():
-                        lst.append(0)
+                        lst.append(0)  # 0 = below average
                     else:
-                        lst.append(1)
-                # 0 = below average
-                # 1 = above average
+                        lst.append(1)  # 1 = above average
                 wines_binary['quality_binary'] = lst
 
                 # DISCRETIZE QUALITY TO NORMALIZED DATASET
@@ -398,12 +387,24 @@ while option != 0:
                 lst = []
                 for row in wines.quality:
                     if row < wines['quality'].mean():
-                        lst.append(0)
+                        lst.append(0)  # 0 = below average
                     else:
-                        lst.append(1)
-                # 0 = below average
-                # 1 = above average
+                        lst.append(1)  # 1 = above average
                 wines_binary_norm['quality_binary'] = lst
+
+                print('\n')
+                print('Normalized dataset ready')
+                print(wines_binary_norm)
+                print('\n')
+                print('Not Normalized dataset ready')
+                print(wines_binary)
+
+                # visualizations before and after normalizing the data
+                sns.displot(wines_norm['alcohol']).set(title='Normalized')
+                plt.tight_layout()
+                sns.displot(wines['alcohol']).set(title='Not Normalized')
+                plt.tight_layout()
+                plt.show()
 
             else:
                 print("Invalid Option")
