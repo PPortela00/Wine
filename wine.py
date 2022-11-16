@@ -64,14 +64,13 @@ def submenu1():
     print("[6] Distribution of red and white wine taking into account the quality")
     print("[7] Boxplots showing all components of white and red wine")
     print("[8] Existing correlation between quality and the various attributes")
-    print("[9] HeatMaps - display correlations between quality and various attributes for the white and red wine")
-    print("[10] HeatMap - displays the correlation difference between red wine and white wine")
-    print("[11] Existing covariance between quality and the various attributes")
-    print("[12] Red wine stripplots - characteristics for which it had the highest correlation")
-    print("[13] White wine stripplots - characteristics for which it had the highest correlation")
-    print("[14] Red Wine Regplots - express interesting correlations between different components")
-    print("[15] White Wine Regplots - express interesting correlations between different components")
-    print("[16] ScatterPlots")
+    print("[9] HeatMap - display correlation between red wine and white wine attributes")
+    print("[10] Existing covariance between quality and the various attributes")
+    print("[11] Red wine boxplots - characteristics for which it had the highest correlation")
+    print("[12] White wine boxplots - characteristics for which it had the highest correlation")
+    print("[13] Red Wine Regplots - express interesting correlations between different components")
+    print("[14] White Wine Regplots - express interesting correlations between different components")
+    print("[15] ScatterPlots")
 
     print("\n[0] Return to the program's main menu")
 
@@ -165,7 +164,7 @@ while option != 0:
                 print(df_red.describe())
                 print("\n")
                 print("White Wine")
-                print(df_red.describe())
+                print(df_white.describe())
                 print("\n")
 
             elif option == 5:
@@ -186,10 +185,10 @@ while option != 0:
                 plt.show()
 
             elif option == 7:
-                df_red.hist()
+                sns.boxplot(data=df_red, palette = 'Blues')
                 plt.tight_layout(pad=1.1)
                 plt.suptitle('Red Wine - distribution of the various components', fontsize=13)
-                df_white.hist()
+                sns.boxplot(data=df_red, palette = 'Blues')
                 plt.tight_layout(pad=1.1)
                 plt.suptitle('White Wine - distribution of the various components', fontsize=13)
                 plt.show()
@@ -207,41 +206,23 @@ while option != 0:
 
             elif option == 9:
                 numerics = ['int16', 'int32', 'int64', 'float16', 'float32', 'float64']
-                corr = df_red.select_dtypes(include=numerics).corr()
-                print('\n')
-                print('Correlations between the various attributes of red wine')
-                print(corr)
+                corr_red = df_red.select_dtypes(include=numerics).corr()
                 plt.subplots(figsize=(12, 6))
-                sns.heatmap(corr, xticklabels=corr.columns, yticklabels=corr.columns, annot=True,
+                sns.heatmap(corr_red, xticklabels=corr_red.columns, yticklabels=corr_red.columns, annot=True,
                             cmap=sns.diverging_palette(220, 20, as_cmap=True))
-
-                plt.suptitle('HeatMap- Red Wine', fontsize=13)
+                plt.suptitle('HeatMap- Correlation between red wine attributes', fontsize=15)
                 plt.tight_layout()
-                corr1 = df_white.select_dtypes(include=numerics).corr()
-                print('\n')
-                print('Correlations between the various attributes of wjite wine')
-                print(corr1)
+
+                corr_white = df_white.select_dtypes(include=numerics).corr()
                 plt.subplots(figsize=(12, 6))
-                sns.heatmap(corr1, xticklabels=corr1.columns, yticklabels=corr1.columns, annot=True,
+                sns.heatmap(corr_white, xticklabels=corr_white.columns, yticklabels=corr_white.columns, annot=True,
                             cmap=sns.diverging_palette(220, 20, as_cmap=True))
-
-                plt.suptitle('HeatMap- White Wine', fontsize=13)
+                plt.suptitle('HeatMap- Correlation between white wine attributes', fontsize=15)
                 plt.tight_layout()
+
                 plt.show()
 
             elif option == 10:
-                numerics = ['int16', 'int32', 'int64', 'float16', 'float32', 'float64']
-                dif_corr = df_red.select_dtypes(include=numerics).corr() - df_white.select_dtypes(include=numerics).corr()
-
-                plt.subplots(figsize=(12, 6))
-                sns.heatmap(dif_corr, xticklabels=dif_corr.columns, yticklabels=dif_corr.columns, annot=True,
-                            cmap=sns.diverging_palette(220, 20, as_cmap=True))
-
-                plt.suptitle('HeatMap- Correlation difference between red and white wine', fontsize=15)
-                plt.tight_layout()
-                plt.show()
-
-            elif option == 11:
                 numerics = ['int16', 'int32', 'int64', 'float16', 'float32', 'float64']
                 covarianciared = df_red.select_dtypes(include=numerics).cov()['quality'].sort_values(ascending=False)
                 covarianciawhite = df_white.select_dtypes(include=numerics).cov()['quality'].sort_values(ascending=False)
@@ -276,53 +257,53 @@ while option != 0:
                 plt.tight_layout()
                 plt.show()
 
-            elif option == 12:
+            elif option == 11:
                 plt.figure(figsize=(6, 4))
                 plt.suptitle('Red Wine - quality & alcohol', fontsize=15)
                 sns.boxplot(orient='v', data=df_red, y="alcohol", x="quality")
-                sns.stripplot(data=df_red, y="alcohol", x="quality")
+                #sns.stripplot(data=df_red, y="alcohol", x="quality")
 
                 plt.figure(figsize=(6, 4))
                 plt.suptitle('Red Wine - quality & sulfates', fontsize=15)
                 sns.boxplot(orient='v', data=df_red, y="sulphates", x="quality")
-                sns.stripplot(data=df_red, y="sulphates", x="quality")
+                #sns.stripplot(data=df_red, y="sulphates", x="quality")
 
                 plt.figure(figsize=(6, 4))
                 plt.suptitle('Red Wine - quality & volatile acidity ', fontsize=15)
                 sns.boxplot(orient='v', data=df_red, y="volatile_acidity", x="quality")
-                sns.stripplot(data=df_red, y="volatile_acidity", x="quality")
+                #sns.stripplot(data=df_red, y="volatile_acidity", x="quality")
 
                 plt.figure(figsize=(6, 4))
                 plt.suptitle('Red Wine - quality & citric acid', fontsize=15)
                 sns.boxplot(orient='v', data=df_red, y="citric_acid", x="quality")
-                sns.stripplot(data=df_red, y="citric_acid", x="quality")
+                #sns.stripplot(data=df_red, y="citric_acid", x="quality")
                 plt.show()
 
-            elif option == 13:
+            elif option == 12:
 
                 plt.figure(figsize=(6, 4))
                 plt.suptitle('White wine - quality & alcohol', fontsize=15)
                 sns.boxplot(orient='v', data=df_white, y="alcohol", x="quality")
-                sns.stripplot(data=df_white, y="alcohol", x="quality")
+                #sns.stripplot(data=df_white, y="alcohol", x="quality")
 
                 plt.figure(figsize=(6, 4))
                 plt.suptitle('White wine - quality & sulfates', fontsize=15)
                 sns.boxplot(orient='v', data=df_white, y="sulphates", x="quality")
-                sns.stripplot(data=df_white, y="sulphates", x="quality")
+                #sns.stripplot(data=df_white, y="sulphates", x="quality")
 
                 plt.figure(figsize=(6, 4))
                 plt.suptitle('White wine - quality & pH', fontsize=15)
                 sns.boxplot(orient='v', data=df_white, y="pH", x="quality")
-                sns.stripplot(data=df_white, y="pH", x="quality")
+                #sns.stripplot(data=df_white, y="pH", x="quality")
 
                 plt.figure(figsize=(6, 4))
                 plt.suptitle('White wine - quality & density', fontsize=15)
                 sns.boxplot(orient='v', data=df_white, y="density", x="quality")
-                sns.stripplot(data=df_white, y="density", x="quality")
+                #sns.stripplot(data=df_white, y="density", x="quality")
 
                 plt.show()
 
-            elif option == 14:
+            elif option == 13:
                 fig, ((ax1, ax2), (ax3,ax4)) = plt.subplots(nrows=2, ncols=2, figsize=(14, 10))
                 sns.regplot(x="alcohol", y="density", data=df_red, ax=ax1, scatter_kws={'s': 2})
                 sns.regplot(x="fixed_acidity", y="density", data=df_red, ax=ax2, scatter_kws={'s': 2})
@@ -330,7 +311,7 @@ while option != 0:
                 sns.regplot(x="pH", y="fixed_acidity", data=df_red, ax=ax4, scatter_kws={'s': 2})
                 plt.show()
 
-            elif option == 15:
+            elif option == 14:
                 fig, ((ax1, ax2) , (ax3,ax4)) = plt.subplots(nrows=2, ncols=2, figsize=(14, 10))
 
                 sns.regplot(x="alcohol", y="density", data=df_white,ax=ax1, scatter_kws={'s': 2})
@@ -338,7 +319,7 @@ while option != 0:
                 sns.regplot(x="density", y="residual_sugar", data=df_white, ax=ax3, scatter_kws={'s': 2})
                 sns.regplot(x="alcohol", y="residual_sugar", data=df_white, ax=ax4, scatter_kws={'s': 2})
                 plt.show()
-            elif option ==16:
+            elif option ==15:
                 sns.scatterplot(x='free_sulfur_dioxide', y='total_sulfur_dioxide', hue='color', data=df_all)
                 plt.figure()
                 sns.scatterplot(x='residual_sugar', y='density', hue='color', data=df_all)
