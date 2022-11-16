@@ -4,6 +4,7 @@ import seaborn as sns
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 from datetime import time
+from pandas.plotting import scatter_matrix
 from sklearn.preprocessing import MinMaxScaler
 from sklearn.naive_bayes import GaussianNB
 from sklearn.neighbors import KNeighborsClassifier
@@ -47,6 +48,7 @@ def menu():
 menu()
 option = int(input("\nInsert the command that you want to execute:\n"))
 
+
 def submenu1():
     print("\n")
     print("------ Business & Data Understanding Menu ------")
@@ -64,7 +66,7 @@ def submenu1():
     print("[12] White wine boxplots - characteristics for which it had the highest correlation")
     print("[13] Red Wine Regplots - express interesting correlations between different components")
     print("[14] White Wine Regplots - express interesting correlations between different components")
-    print("[15] ScatterPlots")
+    print("[15] ScatterPlot matrix for red and white wines")
 
     print("\n[0] Return to the program's main menu")
 
@@ -317,8 +319,14 @@ while option != 0:
                 plt.show()
             elif option ==15:
                 sns.scatterplot(x='free_sulfur_dioxide', y='total_sulfur_dioxide', hue='color', data=wines)
+                scatter_matrix(redwines, alpha = 1.0, figsize = (12, 12*1.61), diagonal = 'hist')
+                plt.suptitle('Red Wine - scatterplot of all attributes', fontsize=13)
+                #sns.scatterplot(x='free_sulfur_dioxide', y='total_sulfur_dioxide', hue='color', data=df_all)
                 plt.figure()
                 sns.scatterplot(x='residual_sugar', y='density', hue='color', data=wines)
+                scatter_matrix(whitewines, alpha = 1.0, figsize = (12, 12*1.61), diagonal = 'hist')
+                plt.suptitle('White Wine - scatterplot of all attributes', fontsize=13)
+                #sns.scatterplot(x='residual_sugar', y='density', hue='color', data=df_all)
                 plt.show()
             else:
                 print("Invalid option")
