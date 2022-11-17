@@ -1,31 +1,23 @@
-import pandas as pd
-import numpy as np
-import seaborn as sns
-import matplotlib as mpl
 import matplotlib.pyplot as plt
-from datetime import time
-from pandas.plotting import scatter_matrix
-from sklearn.preprocessing import MinMaxScaler
+import numpy as np
+import pandas as pd
+import seaborn as sns
+from sklearn import cluster
+from sklearn import tree
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.linear_model import LogisticRegression
+from sklearn.linear_model import Perceptron
+from sklearn.metrics import accuracy_score
+from sklearn.metrics import confusion_matrix
+from sklearn.metrics import silhouette_score
+from sklearn.model_selection import StratifiedKFold
+from sklearn.model_selection import cross_val_score
+from sklearn.model_selection import train_test_split
 from sklearn.naive_bayes import GaussianNB
 from sklearn.neighbors import KNeighborsClassifier
-from sklearn.metrics import accuracy_score
-from sklearn.model_selection import cross_val_score
-from sklearn import svm, datasets
-from sklearn.ensemble import RandomForestClassifier
-from sklearn.metrics import confusion_matrix
-from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import MinMaxScaler
 from sklearn.preprocessing import StandardScaler
-#from tabulate import tabulate
-from sklearn import cluster
-from sklearn.metrics import silhouette_score
-from sklearn.linear_model import Perceptron
-from sklearn.linear_model import LogisticRegression
-from sklearn.linear_model import LogisticRegressionCV
-from sklearn.metrics import confusion_matrix
-from sklearn.model_selection import train_test_split
-from sklearn.model_selection import StratifiedKFold
-from timeit import timeit
-from sklearn import datasets, tree
+from sklearn.tree import DecisionTreeClassifier
 
 pd.set_option('display.max_columns', None)                  #para poder visualizar todas as colunas no display
 pd.set_option('display.width', 1000)
@@ -615,15 +607,11 @@ while option != 0:
                 print("Shape of y_test", y_test.shape)
 
                 # Feature Scaling
-                from sklearn.preprocessing import StandardScaler
-
                 sc = StandardScaler()
                 X_train_scaled = sc.fit_transform(X_train)
                 X_test_scaled = sc.transform(X_test)
 
                 # Fitting classifier to the Training set
-                from sklearn.tree import DecisionTreeClassifier
-
                 classifier_dt = DecisionTreeClassifier(criterion='gini', max_features=6, max_leaf_nodes=400,
                                                        random_state=33)
                 classifier_dt.fit(X_train_scaled, y_train.ravel())
@@ -661,7 +649,7 @@ while option != 0:
 
             elif option == 6:
 
-                from sklearn import datasets, tree
+                from sklearn import tree
                 from sklearn.metrics import confusion_matrix
                 from sklearn.model_selection import train_test_split
 
@@ -717,7 +705,7 @@ while option != 0:
 
             elif option == 8:
 
-                from sklearn import svm, datasets
+                from sklearn import svm
                 from sklearn.model_selection import train_test_split
                 from sklearn.metrics import plot_confusion_matrix
 
