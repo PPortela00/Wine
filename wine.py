@@ -1,32 +1,23 @@
-import pandas as pd
-import numpy as np
-import seaborn as sns
-import matplotlib as mpl
 import matplotlib.pyplot as plt
-from datetime import time
-from pandas.plotting import scatter_matrix
-from sklearn.preprocessing import MinMaxScaler
+import numpy as np
+import pandas as pd
+import seaborn as sns
+from sklearn import cluster
+from sklearn import tree
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.linear_model import LogisticRegression
+from sklearn.linear_model import Perceptron
+from sklearn.metrics import accuracy_score
+from sklearn.metrics import confusion_matrix
+from sklearn.metrics import silhouette_score
+from sklearn.model_selection import StratifiedKFold
+from sklearn.model_selection import cross_val_score
+from sklearn.model_selection import train_test_split
 from sklearn.naive_bayes import GaussianNB
 from sklearn.neighbors import KNeighborsClassifier
-from sklearn.metrics import accuracy_score
-from sklearn.model_selection import cross_val_score
-from sklearn import svm, datasets
-from sklearn.ensemble import RandomForestClassifier
-from sklearn.metrics import confusion_matrix
-from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import MinMaxScaler
 from sklearn.preprocessing import StandardScaler
-#from tabulate import tabulate
-from sklearn import cluster
-from sklearn import metrics
-from sklearn.metrics import silhouette_score
-from sklearn.linear_model import Perceptron
-from sklearn.linear_model import LogisticRegression
-from sklearn.linear_model import LogisticRegressionCV
-from sklearn.metrics import confusion_matrix
-from sklearn.model_selection import train_test_split
-from sklearn.model_selection import StratifiedKFold
-from timeit import timeit
-from sklearn import datasets, tree
+from sklearn.tree import DecisionTreeClassifier
 
 pd.set_option('display.max_columns', None)                  #para poder visualizar todas as colunas no display
 pd.set_option('display.width', 1000)
@@ -626,15 +617,11 @@ while option != 0:
                 print("Shape of y_test", y_test.shape)
 
                 # Feature Scaling
-                from sklearn.preprocessing import StandardScaler
-
                 sc = StandardScaler()
                 X_train_scaled = sc.fit_transform(X_train)
                 X_test_scaled = sc.transform(X_test)
 
                 # Fitting classifier to the Training set
-                from sklearn.tree import DecisionTreeClassifier
-
                 classifier_dt = DecisionTreeClassifier(criterion='gini', max_features=6, max_leaf_nodes=400,
                                                        random_state=33)
                 classifier_dt.fit(X_train_scaled, y_train.ravel())
@@ -672,7 +659,7 @@ while option != 0:
 
             elif option == 6:
 
-                from sklearn import datasets, tree
+                from sklearn import tree
                 from sklearn.metrics import confusion_matrix
                 from sklearn.model_selection import train_test_split
 
@@ -728,7 +715,7 @@ while option != 0:
 
             elif option == 8:
 
-                from sklearn import svm, datasets
+                from sklearn import svm
                 from sklearn.model_selection import train_test_split
                 from sklearn.metrics import plot_confusion_matrix
 
@@ -755,108 +742,51 @@ while option != 0:
                 plt.show()
 
             elif option == 9:
-                from sklearn import tree
+                X = wines_binary.iloc[:, 0:12].values
+                y = wines_binary.iloc[:, 12:13].values.ravel()
 
-                print("\n ")
-                print("\n White Wine")
-                X = whitewines.iloc[:, 0:11].values
-                y = whitewines.iloc[:, 11:12].values.ravel()
+                X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=0)
+                print("Shape of X_train: ", X_train.shape)
+                print("Shape of X_test: ", X_test.shape)
+                print("Shape of y_train: ", y_train.shape)
+                print("Shape of y_test", y_test.shape)
 
-                X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.5, random_state=0)
+                # Feature Scaling
+                sc = StandardScaler()
+                X_train_scaled = sc.fit_transform(X_train)
+                X_test_scaled = sc.transform(X_test)
 
-                print("NaiveBayes")
-                gnb = GaussianNB()
-                y_pred = gnb.fit(X_train, y_train).predict(X_test)
-                print(confusion_matrix(y_test, y_pred))
-                print("Number of mislabeled points out of a total %d points : %d" % (
-                X_test.shape[0], (y_test != y_pred).sum()))
-
-                accuracynb = ((y_test != y_pred).sum() / X_test.shape[0]) * 100
-                print(accuracynb, "%")
-
-                print("KNN")
-                neigh = KNeighborsClassifier(n_neighbors=48)
-                y_pred = neigh.fit(X_train, y_train).predict(X_test)
-                print(confusion_matrix(y_test, y_pred))
-                print("Number of mislabeled points out of a total %d points : %d" % (
-                X_test.shape[0], (y_test != y_pred).sum()))
-
-                accuracyknn = ((y_test != y_pred).sum() / X_test.shape[0]) * 100
-                print(accuracyknn, "%")
-
-                print("Decision Tree")
-                clf = tree.DecisionTreeClassifier()
-                clf = clf.fit(X_train, y_train)
-                y_pred = clf.predict(X_test)
-
-                accuracydt = clf.score(X_test, y_test) * 100
-                print(accuracydt, "%")
-                print(confusion_matrix(y_test, y_pred))
-
-                print("RandomForest")
+                print("\nRandom Forest Classification")
                 rf = RandomForestClassifier(max_depth=10, random_state=0)
                 clf = rf.fit(X_train, y_train)
                 y_pred = clf.predict(X_test)
-
-                accuracyrf = clf.score(X_test, y_test) * 100
-                print(accuracyrf, "%")
                 print(confusion_matrix(y_test, y_pred))
 
-                print("K-Means Clustering")
-                rf = k_means = cluster.KMeans(n_clusters=2)
-                clf = rf.fit(whitewines)
-                centroids = clf.cluster_centers_
-                accuracykmc = silhouette_score(whitewines, clf.labels_) * 100
-                print(centroids)
-                print(accuracykmc, "%")
+                print("\nNumber of well predicted points out of a total %d points: %d" % (
+                X_test.shape[0], (y_test == y_pred).sum()))
+                accuracy = ((y_test == y_pred).sum() / X_test.shape[0]) * 100
+                print("Precision = {:.2f} %".format(accuracy))
 
-                print("Perceptron Classification")
+                classifier_rf = RandomForestClassifier(criterion='entropy', max_features=4, n_estimators=800,
+                                                       random_state=33)
+                classifier_rf.fit(X_train_scaled, y_train.ravel())
 
-                scaler = MinMaxScaler()
-                scaler.fit(whitewines.iloc[:, 0:11])
-                scaled_features = scaler.transform(whitewines.iloc[:, 0:11])
-                print(scaled_features)
+                # Predicting Cross Validation Score
+                cv_rf = cross_val_score(estimator=classifier_rf, X=X_train_scaled, y=y_train.ravel(), cv=10)
+                print("CV: ", cv_rf.mean())
 
-                # volta a converter em dataframe
-                print('\n')
-                new = pd.DataFrame(data=scaled_features,
-                                   columns=["fixed_acidity",
-                                            "volatile_acidity", "citric_acid", "residual_sugar", "chlorides",
-                                            "free_sulfur_dioxide",
-                                            "total_sulfur_dioxide", "density", "pH", "sulphates", "alcohol"])
-                print(new)
+                y_pred_rf_train = classifier_rf.predict(X_train_scaled)
+                accuracy_rf_train = accuracy_score(y_train, y_pred_rf_train)
+                print("Training set: ", accuracy_rf_train)
 
-                X = new.iloc[:, 0:11].values
-                y = whitewines.iloc[:, 11:12].values.ravel()
+                y_pred_rf_test = classifier_rf.predict(X_test_scaled)
+                accuracy_rf_test = accuracy_score(y_test, y_pred_rf_test)
+                print("Test set: ", accuracy_rf_test)
 
-                X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=0)
-
-                clf = Perceptron(verbose=3)
-                clf = clf.fit(X_train, y_train)
-                y_pred = clf.predict(X_test)
-                accuracypc = clf.score(X_test, y_test) * 100
-                print(accuracypc)
-
-                models = [('K-Nearest Neighbors (KNN)', accuracyknn),
-                          ('Naive Bayes', accuracynb),
-                          ('Decision Tree Classification', accuracydt),
-                          ('Random Forest Tree Classification', accuracyrf),
-                          ('K-Means Clustering ', accuracykmc),
-                          ('Perceptron Classification', accuracypc)]
-
-                predict = pd.DataFrame(data=models, columns=['Model', 'Accuracy'])
-                print(predict)
-
-                f, axe = plt.subplots(1, 1, figsize=(18, 6))
-
-                predict.sort_values(by=['Accuracy'], ascending=False, inplace=True)
-
-                sns.barplot(x='Accuracy', y='Model', data=predict, ax=axe)
-                # axes[0].set(xlabel='Region', ylabel='Charges')
-                axe.set_xlabel('Score in %', size=16)
-                axe.set_ylabel('Model')
-
-                plt.show()
+                tp_rf = confusion_matrix(y_test, y_pred_rf_test)[0, 0]
+                fp_rf = confusion_matrix(y_test, y_pred_rf_test)[0, 1]
+                tn_rf = confusion_matrix(y_test, y_pred_rf_test)[1, 1]
+                fn_rf = confusion_matrix(y_test, y_pred_rf_test)[1, 0]
 
             elif option == 10:
                 from sklearn import tree
