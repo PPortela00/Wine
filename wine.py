@@ -95,7 +95,7 @@ def submenu3():
     print("[8] Support Vector Machine")
     print("[9] Random Forest")
 
-    print("[1] NaiveBayes")
+    """print("[1] NaiveBayes")
     print("[2] Better k for the KNN")
     print("[3] KNN")
     print("[4] Cross-Validation and Training and Test Set - Red Wine")
@@ -113,7 +113,7 @@ def submenu3():
     print("[16] Perceptron Classification - White Wine")
     print("[17] Perceptron Classification - Red Wine")
     print("[18] Time - White Wine")
-    print("[19] Time - Red Wine")
+    print("[19] Time - Red Wine")"""
 
     print("[0] Return to the program's main menu")
 
@@ -353,8 +353,8 @@ while option != 0:
 
         while option != 0:
             if option == 1:
-                redwines["WineType"] = 0         #Red wine - 0
-                whitewines["WineType"] = 1       #White wine - 1
+                redwines["wineType"] = 0         #Red wine - 0
+                whitewines["wineType"] = 1       #White wine - 1
                 print("Red Wine")
                 print(redwines.head())
                 print("\nWhite Wine")
@@ -365,8 +365,8 @@ while option != 0:
                 wines.columns = wines.columns.str.replace(' ', '_')
                 print("\n All wines together")
                 print(wines)
-                redwines = redwines.drop(columns=['WineType'])
-                whitewines = whitewines.drop(columns=['WineType'])
+                redwines = redwines.drop(columns=['wineType'])
+                whitewines = whitewines.drop(columns=['wineType'])
 
             elif option == 3:
                 wines = wines.drop_duplicates()
@@ -432,51 +432,7 @@ while option != 0:
         while option != 0:
             if option == 1:
                 print("\n ")
-                print("\n Red Wine")
 
-                X = redwines.iloc[:, 0:11].values
-                y = redwines.iloc[:, 11:12].values.ravel()
-
-                X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.5, random_state=0)
-
-                print("NaiveBayes")
-                gnb = GaussianNB()
-                y_pred = gnb.fit(X_train, y_train).predict(X_test)
-
-                cf_matrix = confusion_matrix(y_test, y_pred)
-                print(cf_matrix)
-
-                plt.show()
-
-                print("Number of mislabeled points out of a total %d points : %d" % (
-                X_test.shape[0], (y_test != y_pred).sum()))
-
-                accuracy = ((y_test != y_pred).sum() / X_test.shape[0]) * 100
-                print(accuracy, "%")
-
-                print("\n ")
-                print("\n White Wine")
-                X = whitewines.iloc[:, 0:11].values
-                y = whitewines.iloc[:, 11:12].values.ravel()
-
-                X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.5, random_state=0)
-
-                print("NaiveBayes")
-                gnb = GaussianNB()
-                y_pred = gnb.fit(X_train, y_train).predict(X_test)
-                print(confusion_matrix(y_test, y_pred))
-                print("Number of mislabeled points out of a total %d points : %d" % (
-                X_test.shape[0], (y_test != y_pred).sum()))
-
-                accuracy1 = ((y_test != y_pred).sum() / X_test.shape[0]) * 100
-                print(accuracy1, "%")
-
-                models = [
-                    ('K-Nearest Neighbors (KNN) - Red Wine', accuracy),
-                    ('K-Nearest Neighbors (KNN) - White Wine', accuracy1)]
-
-                predict = pd.DataFrame(data=models, columns=['Model', 'KNN'])
-                print(predict)
             elif option == 2:
                 print("\n ")
                 print("\n Red Wine")
