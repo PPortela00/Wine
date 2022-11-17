@@ -478,11 +478,11 @@ while option != 0:
 
                 y_pred_nb_train = classifier_nb1.predict(X_train_scaled)
                 accuracy_nb_train = accuracy_score(y_train, y_pred_nb_train)
-                print("Training set: ", accuracy_nb_train)
+                print("Training set accuracy: ", accuracy_nb_train)
 
                 y_pred_nb_test = classifier_nb1.predict(X_test_scaled)
                 accuracy_nb_test = accuracy_score(y_test, y_pred_nb_test)
-                print("Test set: ", accuracy_nb_test)
+                print("Test set accuracy: ", accuracy_nb_test)
 
                 tp_nb = confusion_matrix(y_test, y_pred_nb_test)[0, 0]
                 fp_nb = confusion_matrix(y_test, y_pred_nb_test)[0, 1]
