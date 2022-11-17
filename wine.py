@@ -262,22 +262,19 @@ while option != 0:
                 plt.figure(figsize=(6, 4))
                 plt.suptitle('Red Wine - quality & alcohol', fontsize=15)
                 sns.boxplot(orient='v', data=redwines, y="alcohol", x="quality")
-                #sns.stripplot(data=redwines, y="alcohol", x="quality")
 
                 plt.figure(figsize=(6, 4))
                 plt.suptitle('Red Wine - quality & sulfates', fontsize=15)
                 sns.boxplot(orient='v', data=redwines, y="sulphates", x="quality")
-                #sns.stripplot(data=redwines, y="sulphates", x="quality")
 
                 plt.figure(figsize=(6, 4))
                 plt.suptitle('Red Wine - quality & volatile acidity ', fontsize=15)
                 sns.boxplot(orient='v', data=redwines, y="volatile_acidity", x="quality")
-                #sns.stripplot(data=redwines, y="volatile_acidity", x="quality")
 
                 plt.figure(figsize=(6, 4))
                 plt.suptitle('Red Wine - quality & citric acid', fontsize=15)
                 sns.boxplot(orient='v', data=redwines, y="citric_acid", x="quality")
-                #sns.stripplot(data=redwines, y="citric_acid", x="quality")
+
                 plt.show()
 
             elif option == 12:
@@ -285,22 +282,18 @@ while option != 0:
                 plt.figure(figsize=(6, 4))
                 plt.suptitle('White wine - quality & alcohol', fontsize=15)
                 sns.boxplot(orient='v', data=whitewines, y="alcohol", x="quality")
-                #sns.stripplot(data=whitewines, y="alcohol", x="quality")
 
                 plt.figure(figsize=(6, 4))
                 plt.suptitle('White wine - quality & sulfates', fontsize=15)
                 sns.boxplot(orient='v', data=whitewines, y="sulphates", x="quality")
-                #sns.stripplot(data=whitewines, y="sulphates", x="quality")
 
                 plt.figure(figsize=(6, 4))
                 plt.suptitle('White wine - quality & pH', fontsize=15)
                 sns.boxplot(orient='v', data=whitewines, y="pH", x="quality")
-                #sns.stripplot(data=whitewines, y="pH", x="quality")
 
                 plt.figure(figsize=(6, 4))
                 plt.suptitle('White wine - quality & density', fontsize=15)
                 sns.boxplot(orient='v', data=whitewines, y="density", x="quality")
-                #sns.stripplot(data=whitewines, y="density", x="quality")
 
                 plt.show()
 
@@ -319,21 +312,18 @@ while option != 0:
                 sns.regplot(x="total_sulfur_dioxide", y="density", data=whitewines, ax=ax2, scatter_kws={'s': 2})
                 sns.regplot(x="density", y="residual_sugar", data=whitewines, ax=ax3, scatter_kws={'s': 2})
                 sns.regplot(x="alcohol", y="residual_sugar", data=whitewines, ax=ax4, scatter_kws={'s': 2})
-                plt.suptitle("Red Wine - Interesting correlations")
+                plt.suptitle("White Wine - Interesting correlations")
                 plt.show()
 
             elif option == 15:
-                #sns.scatterplot(x='free_sulfur_dioxide', y='total_sulfur_dioxide', data=redwines)
-                #scatter_matrix(redwines, alpha = 1.0, figsize = (12, 12*1.61), diagonal = 'hist')
                 axes = pd.plotting.scatter_matrix(redwines, alpha=1.0)
                 for ax in axes.flatten():
                     ax.xaxis.label.set_rotation(25)
                     ax.yaxis.label.set_rotation(25)
                     ax.yaxis.label.set_ha('right')
                 plt.suptitle('Red Wine - scatterplot of all attributes', fontsize=13)
-                #sns.scatterplot(x='residual_sugar', y='density', data=whitewines)
-                #scatter_matrix(whitewines, alpha = 1.0, figsize = (12, 12*1.61), diagonal = 'hist')
-                axes1 = pd.plotting.scatter_matrix(redwines, alpha=1.0)
+
+                axes1 = pd.plotting.scatter_matrix(whitewines, alpha=1.0)
                 for ax in axes1.flatten():
                     ax.xaxis.label.set_rotation(25)
                     ax.yaxis.label.set_rotation(25)
