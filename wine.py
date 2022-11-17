@@ -4,8 +4,10 @@ import pandas as pd
 import seaborn as sns
 from sklearn import cluster
 from sklearn import tree
+from sklearn import metrics
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.linear_model import LogisticRegression
+from sklearn import svm
 from sklearn.linear_model import Perceptron
 from sklearn.metrics import accuracy_score
 from sklearn.metrics import confusion_matrix
@@ -586,10 +588,23 @@ while option != 0:
                     f1[i] = metrics.f1_score(yhat, y_val)
                     i = i + 1
 
+                print('\n')
+                print('Predictive measures for training data')
                 print('Mean accuracy: ' + str(np.mean(acc, axis=0)))
                 print("Mean precision: " + str(np.mean(pre, axis=0)))
                 print("Mean recall: " + str(np.mean(rec, axis=0)))
                 print("Mean f1-score: " + str(np.mean(f1, axis=0)))
+                print('\n')
+
+                classifier_logistic = LogisticRegression(max_iter=5000)
+                classifier_logistic.fit(X_train, y_train)
+                # Test the model with the test set
+                pred = classifier_logistic.predict(X_test)
+                print('Predictive measures for test data')
+                print('Test accuracy: ' + str(metrics.accuracy_score(pred, y_test)))
+                print('Test accuracy: ' + str(metrics.precision_score(pred, y_test)))
+                print('Test accuracy: ' + str(metrics.recall_score(pred, y_test)))
+                print('Test accuracy: ' + str(metrics.f1_score(pred, y_test)))
 
             elif option == 5:
                 X = wines_binary.iloc[:, 0:12].values
@@ -699,31 +714,165 @@ while option != 0:
 
             elif option == 8:
 
-                from sklearn import svm
-                from sklearn.model_selection import train_test_split
-                from sklearn.metrics import plot_confusion_matrix
-
-                X = whitewines.iloc[:, 0:11].values
-                y = whitewines.iloc[:, 11:12].values.ravel()
+                # Train_test split
+                X = wines_binary_norm.iloc[:, 0:12].values
+                y = wines_binary_norm.iloc[:, 12:13].values.ravel()
                 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=0)
 
-                classifier = svm.SVC(kernel='linear', C=0.01).fit(X_train, y_train)
+                # Create a stratified 10-fold cross validation set
+                strtfdKFold = StratifiedKFold(n_splits=10, shuffle=True, random_state=0)
 
-                np.set_printoptions(precision=2)
+                acc = np.zeros((10))
+                pre = np.zeros((10))
+                rec = np.zeros((10))
+                f1 = np.zeros((10))
+                i = 0
+                for train_index, val_index in strtfdKFold.split(X_train, y_train):
+                    X_t, X_val = X_train[train_index], X_train[val_index]
+                    y_t, y_val = y_train[train_index], y_train[val_index]
+                    classifier_svm = svm.SVC(kernel='linear')
+                    classifier_svm.fit(X_t, y_t)
+                    yhat = classifier_svm.predict(X_val)
+                    acc[i] = metrics.accuracy_score(yhat, y_val)
+                    pre[i] = metrics.precision_score(yhat, y_val)
+                    rec[i] = metrics.recall_score(yhat, y_val)
+                    f1[i] = metrics.f1_score(yhat, y_val)
+                    i = i + 1
 
-                # Plot non-normalized confusion matrix
-                titles_options = [("Confusion matrix, without normalization", None),
-                                  ("Normalized confusion matrix", 'true')]
-                for title, normalize in titles_options:
-                    disp = plot_confusion_matrix(classifier, X_test, y_test,
-                                                 cmap=plt.cm.Blues,
-                                                 normalize=normalize)
-                    disp.ax_.set_title(title)
+                print('\n Kernel is linear')
+                print('Mean accuracy: ' + str(np.mean(acc, axis=0)))
+                print("Mean precision: " + str(np.mean(pre, axis=0)))
+                print("Mean recall: " + str(np.mean(rec, axis=0)))
+                print("Mean f1-score: " + str(np.mean(f1, axis=0)))
 
-                    print(title)
-                    print(disp.confusion_matrix)
+                classifier_svm = classifier_svm = svm.SVC(kernel='linear')
+                classifier_svm.fit(X_train, y_train)
+                # Test the model with the test set
+                pred = classifier_svm.predict(X_test)
+                print('Test accuracy: ' + str(metrics.accuracy_score(pred, y_test)))
+                print('Test accuracy: ' + str(metrics.precision_score(pred, y_test)))
+                print('Test accuracy: ' + str(metrics.recall_score(pred, y_test)))
+                print('Test accuracy: ' + str(metrics.f1_score(pred, y_test)))
 
-                plt.show()
+                # Train_test split
+                X = wines_binary_norm.iloc[:, 0:12].values
+                y = wines_binary_norm.iloc[:, 12:13].values.ravel()
+                X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=0)
+
+                # Create a stratified 10-fold cross validation set
+                strtfdKFold = StratifiedKFold(n_splits=10, shuffle=True, random_state=0)
+
+                acc = np.zeros((10))
+                pre = np.zeros((10))
+                rec = np.zeros((10))
+                f1 = np.zeros((10))
+                i = 0
+                for train_index, val_index in strtfdKFold.split(X_train, y_train):
+                    X_t, X_val = X_train[train_index], X_train[val_index]
+                    y_t, y_val = y_train[train_index], y_train[val_index]
+                    classifier_svm = svm.SVC(kernel='poly')
+                    classifier_svm.fit(X_t, y_t)
+                    yhat = classifier_svm.predict(X_val)
+                    acc[i] = metrics.accuracy_score(yhat, y_val)
+                    pre[i] = metrics.precision_score(yhat, y_val)
+                    rec[i] = metrics.recall_score(yhat, y_val)
+                    f1[i] = metrics.f1_score(yhat, y_val)
+                    i = i + 1
+
+                print('\n Kernel is polynomial')
+                print('Mean accuracy: ' + str(np.mean(acc, axis=0)))
+                print("Mean precision: " + str(np.mean(pre, axis=0)))
+                print("Mean recall: " + str(np.mean(rec, axis=0)))
+                print("Mean f1-score: " + str(np.mean(f1, axis=0)))
+
+                classifier_svm = classifier_svm = svm.SVC(kernel='poly')
+                classifier_svm.fit(X_train, y_train)
+                # Test the model with the test set
+                pred = classifier_svm.predict(X_test)
+                print('Test accuracy: ' + str(metrics.accuracy_score(pred, y_test)))
+                print('Test accuracy: ' + str(metrics.precision_score(pred, y_test)))
+                print('Test accuracy: ' + str(metrics.recall_score(pred, y_test)))
+                print('Test accuracy: ' + str(metrics.f1_score(pred, y_test)))
+
+                # Train_test split
+                X = wines_binary_norm.iloc[:, 0:12].values
+                y = wines_binary_norm.iloc[:, 12:13].values.ravel()
+                X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=0)
+
+                # Create a stratified 10-fold cross validation set
+                strtfdKFold = StratifiedKFold(n_splits=10, shuffle=True, random_state=0)
+
+                acc = np.zeros((10))
+                pre = np.zeros((10))
+                rec = np.zeros((10))
+                f1 = np.zeros((10))
+                i = 0
+                for train_index, val_index in strtfdKFold.split(X_train, y_train):
+                    X_t, X_val = X_train[train_index], X_train[val_index]
+                    y_t, y_val = y_train[train_index], y_train[val_index]
+                    classifier_svm = svm.SVC(kernel='sigmoid')
+                    classifier_svm.fit(X_t, y_t)
+                    yhat = classifier_svm.predict(X_val)
+                    acc[i] = metrics.accuracy_score(yhat, y_val)
+                    pre[i] = metrics.precision_score(yhat, y_val)
+                    rec[i] = metrics.recall_score(yhat, y_val)
+                    f1[i] = metrics.f1_score(yhat, y_val)
+                    i = i + 1
+
+                print('\n Kernel is sigmoid')
+                print('Mean accuracy: ' + str(np.mean(acc, axis=0)))
+                print("Mean precision: " + str(np.mean(pre, axis=0)))
+                print("Mean recall: " + str(np.mean(rec, axis=0)))
+                print("Mean f1-score: " + str(np.mean(f1, axis=0)))
+
+                classifier_svm = classifier_svm = svm.SVC(kernel='sigmoid')
+                classifier_svm.fit(X_train, y_train)
+                # Test the model with the test set
+                pred = classifier_svm.predict(X_test)
+                print('Test accuracy: ' + str(metrics.accuracy_score(pred, y_test)))
+                print('Test accuracy: ' + str(metrics.precision_score(pred, y_test)))
+                print('Test accuracy: ' + str(metrics.recall_score(pred, y_test)))
+                print('Test accuracy: ' + str(metrics.f1_score(pred, y_test)))
+
+                # Train_test split
+                X = wines_binary_norm.iloc[:, 0:12].values
+                y = wines_binary_norm.iloc[:, 12:13].values.ravel()
+                X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=0)
+
+                # Create a stratified 10-fold cross validation set
+                strtfdKFold = StratifiedKFold(n_splits=10, shuffle=True, random_state=0)
+
+                acc = np.zeros((10))
+                pre = np.zeros((10))
+                rec = np.zeros((10))
+                f1 = np.zeros((10))
+                i = 0
+                for train_index, val_index in strtfdKFold.split(X_train, y_train):
+                    X_t, X_val = X_train[train_index], X_train[val_index]
+                    y_t, y_val = y_train[train_index], y_train[val_index]
+                    classifier_svm = svm.SVC(kernel='rbf')
+                    classifier_svm.fit(X_t, y_t)
+                    yhat = classifier_svm.predict(X_val)
+                    acc[i] = metrics.accuracy_score(yhat, y_val)
+                    pre[i] = metrics.precision_score(yhat, y_val)
+                    rec[i] = metrics.recall_score(yhat, y_val)
+                    f1[i] = metrics.f1_score(yhat, y_val)
+                    i = i + 1
+
+                print('\n Kernel is rbf')
+                print('Mean accuracy: ' + str(np.mean(acc, axis=0)))
+                print("Mean precision: " + str(np.mean(pre, axis=0)))
+                print("Mean recall: " + str(np.mean(rec, axis=0)))
+                print("Mean f1-score: " + str(np.mean(f1, axis=0)))
+
+                classifier_svm = classifier_svm = svm.SVC(kernel='rbf')
+                classifier_svm.fit(X_train, y_train)
+                # Test the model with the test set
+                pred = classifier_svm.predict(X_test)
+                print('Test accuracy: ' + str(metrics.accuracy_score(pred, y_test)))
+                print('Test accuracy: ' + str(metrics.precision_score(pred, y_test)))
+                print('Test accuracy: ' + str(metrics.recall_score(pred, y_test)))
+                print('Test accuracy: ' + str(metrics.f1_score(pred, y_test)))
 
             elif option == 9:
                 X = wines_binary.iloc[:, 0:12].values
