@@ -432,14 +432,12 @@ while option != 0:
                 y = wines_binary.iloc[:, 12:13].values.ravel()
 
                 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=0)
-                print("Shape of X_train: ", X_train.shape)
+                print("\nShape of X_train: ", X_train.shape)
                 print("Shape of X_test: ", X_test.shape)
                 print("Shape of y_train: ", y_train.shape)
                 print("Shape of y_test", y_test.shape)
 
                 # Feature Scaling
-                from sklearn.preprocessing import StandardScaler
-
                 sc = StandardScaler()
                 X_train_scaled = sc.fit_transform(X_train)
                 X_test_scaled = sc.transform(X_test)
@@ -598,7 +596,7 @@ while option != 0:
                 y = wines_binary.iloc[:, 12:13].values.ravel()
 
                 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=0)
-                print("Shape of X_train: ", X_train.shape)
+                print("\nShape of X_train: ", X_train.shape)
                 print("Shape of X_test: ", X_test.shape)
                 print("Shape of y_train: ", y_train.shape)
                 print("Shape of y_test", y_test.shape)
@@ -608,13 +606,7 @@ while option != 0:
                 X_train_scaled = sc.fit_transform(X_train)
                 X_test_scaled = sc.transform(X_test)
 
-                # Fitting classifier to the Training set
-                classifier_dt = DecisionTreeClassifier(criterion='gini', max_features=6, max_leaf_nodes=400,
-                                                       random_state=33)
-                classifier_dt.fit(X_train_scaled, y_train.ravel())
-
                 print("\nDecision tree")
-
                 clf = tree.DecisionTreeClassifier()
                 clf = clf.fit(X_train, y_train)
                 y_pred = clf.predict(X_test)
@@ -624,6 +616,11 @@ while option != 0:
                 X_test.shape[0], (y_test == y_pred).sum()))
                 accuracy = ((y_test == y_pred).sum() / X_test.shape[0]) * 100
                 print("Precision = {:.2f} %".format(accuracy))
+
+                # Fitting classifier to the Training set
+                classifier_dt = DecisionTreeClassifier(criterion='gini', max_features=6, max_leaf_nodes=400,
+                                                       random_state=33)
+                classifier_dt.fit(X_train_scaled, y_train.ravel())
 
                 # Predicting Cross Validation Score
                 cv_dt = cross_val_score(estimator=classifier_dt, X=X_train_scaled, y=y_train.ravel(), cv=10)
@@ -733,7 +730,7 @@ while option != 0:
                 y = wines_binary.iloc[:, 12:13].values.ravel()
 
                 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=0)
-                print("Shape of X_train: ", X_train.shape)
+                print("\nShape of X_train: ", X_train.shape)
                 print("Shape of X_test: ", X_test.shape)
                 print("Shape of y_train: ", y_train.shape)
                 print("Shape of y_test", y_test.shape)
