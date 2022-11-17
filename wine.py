@@ -686,32 +686,50 @@ while option != 0:
                 print(clf.score(X_test, y_test) * 100, "%")
                 print(confusion_matrix(y_test, y_pred))
 
-
             elif option == 7:
+                X = wines_binary_norm.iloc[:, 0:12].values
+                y = wines_binary_norm.iloc[:, 12:13].values.ravel()
 
-                print("\n")
-                print("Red Wine")
-                X = redwines.iloc[:, 0:11].values
-                y = redwines.iloc[:, 11:12].values.ravel()
                 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=0)
+                print("\nShape of X_train: ", X_train.shape)
+                print("Shape of X_test: ", X_test.shape)
+                print("Shape of y_train: ", y_train.shape)
+                print("Shape of y_test", y_test.shape)
 
-                rf = RandomForestClassifier(max_depth=10, random_state=0)
-                clf = rf.fit(X_train, y_train)
-                y_pred = clf.predict(X_test)
-                print(clf.score(X_test, y_test) * 100, "%")
+                # Feature Scaling
+                sc = StandardScaler()
+                X_train_scaled = sc.fit_transform(X_train)
+                X_test_scaled = sc.transform(X_test)
+
+                ann = MLPClassifier(hidden_layer_sizes=(200, 100), max_iter=1000)
+                ann.fit(X_train, y_train)
+                y_pred = ann.predict(X_test)
+                print("\nArtifial Neural Network")
                 print(confusion_matrix(y_test, y_pred))
 
-                print("\n")
-                print("White Wine")
-                X = whitewines.iloc[:, 0:11].values
-                y = whitewines.iloc[:, 11:12].values.ravel()
-                X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.5, random_state=0)
+                print("\nNumber of well predicted points out of a total %d points: %d" % (
+                X_test.shape[0], (y_test == y_pred).sum()))
+                accuracy = ((y_test == y_pred).sum() / X_test.shape[0]) * 100
+                print("Precision = {:.2f} %".format(accuracy))
 
-                rf = RandomForestClassifier(max_depth=10, random_state=0)
-                clf = rf.fit(X_train, y_train)
-                y_pred = clf.predict(X_test)
-                print(clf.score(X_test, y_test) * 100, "%")
-                print(confusion_matrix(y_test, y_pred))
+                ann1 = MLPClassifier(hidden_layer_sizes=(200, 100), max_iter=1000)
+                ann1.fit(X_train_scaled, y_train.ravel())
+                # Predicting Cross Validation Score
+                cv_ann = cross_val_score(estimator=ann1, X=X_train_scaled, y=y_train.ravel(), cv=10)
+                print("CV: ", cv_rf.mean())
+
+                y_pred_ann_train = ann1.predict(X_train_scaled)
+                accuracy_ann_train = accuracy_score(y_train, y_pred_ann_train)
+                print("Training set: ", accuracy_ann_train)
+
+                y_pred_ann_test = ann1.predict(X_test_scaled)
+                accuracy_ann_test = accuracy_score(y_test, y_pred_ann_test)
+                print("Test set: ", accuracy_ann_test)
+
+                tp_ann = confusion_matrix(y_test, y_pred_ann_test)[0, 0]
+                fp_ann = confusion_matrix(y_test, y_pred_ann_test)[0, 1]
+                tn_ann = confusion_matrix(y_test, y_pred_ann_test)[1, 1]
+                fn_ann = confusion_matrix(y_test, y_pred_ann_test)[1, 0]
 
             elif option == 8:
 
@@ -907,15 +925,15 @@ while option != 0:
 
                 # Predicting Cross Validation Score
                 cv_rf = cross_val_score(estimator=classifier_rf, X=X_train_scaled, y=y_train.ravel(), cv=10)
-                print("CV: ", cv_rf.mean())
+                print("CV:  = {:.2f} ".format(cv_rf.mean()))
 
                 y_pred_rf_train = classifier_rf.predict(X_train_scaled)
                 accuracy_rf_train = accuracy_score(y_train, y_pred_rf_train)
-                print("Training set: ", accuracy_rf_train)
+                print("Training Set Accuracy:  = {:.2f} ".format(accuracy_rf_train))
 
                 y_pred_rf_test = classifier_rf.predict(X_test_scaled)
                 accuracy_rf_test = accuracy_score(y_test, y_pred_rf_test)
-                print("Test set: ", accuracy_rf_test)
+                print("Training Set Accuracy:  = {:.2f} ".format(accuracy_rf_test))
 
                 tp_rf = confusion_matrix(y_test, y_pred_rf_test)[0, 0]
                 fp_rf = confusion_matrix(y_test, y_pred_rf_test)[0, 1]
