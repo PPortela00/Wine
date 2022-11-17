@@ -4,6 +4,7 @@ import pandas as pd
 import seaborn as sns
 from sklearn import cluster
 from sklearn import tree
+from sklearn import metrics
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.linear_model import LogisticRegression
 from sklearn.linear_model import Perceptron
