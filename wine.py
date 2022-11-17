@@ -19,8 +19,11 @@ from sklearn.preprocessing import StandardScaler
 from sklearn import cluster
 from sklearn.metrics import silhouette_score
 from sklearn.linear_model import Perceptron
+from sklearn.linear_model import LogisticRegression
+from sklearn.linear_model import LogisticRegressionCV
 from sklearn.metrics import confusion_matrix
 from sklearn.model_selection import train_test_split
+from sklearn.model_selection import StratifiedKFold
 from timeit import timeit
 from sklearn import datasets, tree
 
@@ -520,208 +523,41 @@ while option != 0:
                 plt.xlabel("Value of K for KNN - White Wine")
                 plt.ylabel("Cross-validated accuracy")
                 plt.show()
+
             elif option == 4:
 
-                X = redwines.iloc[:, 0:11].values
-                y = redwines.iloc[:, 11:12].values.ravel()
-                X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=0)
+                X = wines_binary.iloc[:, 0:12].values
+                y = wines_binary.iloc[:, 12:13].values.ravel()
+                X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.1, random_state=0)
+
+                strtfdKFold = StratifiedKFold(n_splits=10)
+                kfold = strtfdKFold.split(X_train, y_train)
 
                 print("Shape of X_train: ", X_train.shape)
                 print("Shape of X_test: ", X_test.shape)
                 print("Shape of y_train: ", y_train.shape)
                 print("Shape of y_test", y_test.shape)
 
-                from sklearn.preprocessing import StandardScaler
+                classifier_logistic = LogisticRegression(max_iter=1500)
+                classifier_logistic.fit(X_train, y_train)
 
-                sc = StandardScaler()
-                X_train_scaled = sc.fit_transform(X_train)
-                X_test_scaled = sc.transform(X_test)
+                cv_logistic = cross_val_score(estimator=classifier_logistic, X=X_train, y=y_train, cv=10)
+                print("CV: ", cv_logistic.mean())
 
-                from sklearn.neighbors import KNeighborsClassifier
+                y_pred_logistic_train = classifier_logistic.predict(X_train)
+                accuracy_logistic_train = accuracy_score(y_train, y_pred_logistic_train)
+                print("Training set accuracy: ", accuracy_logistic_train)
 
-                classifier_knn = KNeighborsClassifier(leaf_size=1, metric='minkowski', n_neighbors=32,
-                                                      weights='distance')
-                classifier_knn.fit(X_train_scaled, y_train.ravel())
+                y_pred_logistic_test = classifier_logistic.predict(X_test)
+                accuracy_logistic_test = accuracy_score(y_test, y_pred_logistic_test)
+                print("Test set accuracy: ", accuracy_logistic_test)
 
-                print("\n")
-                print("KNN")
-                # Predicting Cross Validation Score
-                cv_knn = cross_val_score(estimator=classifier_knn, X=X_train_scaled, y=y_train.ravel(), cv=10)
-                print("CV: ", cv_knn.mean())
+                print(confusion_matrix(y_test, y_pred_logistic_test))
 
-                y_pred_knn_train = classifier_knn.predict(X_train_scaled)
-                accuracy_knn_train = accuracy_score(y_train, y_pred_knn_train)
-                print("Training set: ", accuracy_knn_train)
-
-                y_pred_knn_test = classifier_knn.predict(X_test_scaled)
-                accuracy_knn_test = accuracy_score(y_test, y_pred_knn_test)
-                print("Test set: ", accuracy_knn_test)
-
-                print(confusion_matrix(y_test, y_pred_knn_test))
-
-                tp_knn = confusion_matrix(y_test, y_pred_knn_test)[0, 0]
-                fp_knn = confusion_matrix(y_test, y_pred_knn_test)[0, 1]
-                tn_knn = confusion_matrix(y_test, y_pred_knn_test)[1, 1]
-                fn_knn = confusion_matrix(y_test, y_pred_knn_test)[1, 0]
-
-                # Fitting classifier to the Training set
-                from sklearn.naive_bayes import GaussianNB
-
-                classifier_nb = GaussianNB()
-                classifier_nb.fit(X_train_scaled, y_train.ravel())
-
-                print("\n")
-                print("NaiveBayes")
-                # Predicting Cross Validation Score
-                cv_nb = cross_val_score(estimator=classifier_nb, X=X_train_scaled, y=y_train.ravel(), cv=10)
-                print("CV: ", cv_nb.mean())
-
-                y_pred_nb_train = classifier_nb.predict(X_train_scaled)
-                accuracy_nb_train = accuracy_score(y_train, y_pred_nb_train)
-                print("Training set: ", accuracy_nb_train)
-
-                y_pred_nb_test = classifier_nb.predict(X_test_scaled)
-                accuracy_nb_test = accuracy_score(y_test, y_pred_nb_test)
-                print("Test set: ", accuracy_nb_test)
-
-                print(confusion_matrix(y_test, y_pred_nb_test))
-
-                tp_nb = confusion_matrix(y_test, y_pred_nb_test)[0, 0]
-                fp_nb = confusion_matrix(y_test, y_pred_nb_test)[0, 1]
-                tn_nb = confusion_matrix(y_test, y_pred_nb_test)[1, 1]
-                fn_nb = confusion_matrix(y_test, y_pred_nb_test)[1, 0]
-
-                print("\n")
-                print("Decision Tree")
-                from sklearn.tree import DecisionTreeClassifier, export_graphviz
-
-                classifier_dt = DecisionTreeClassifier(criterion='gini', max_features=6, max_leaf_nodes=400,
-                                                       random_state=33)
-                classifier_dt.fit(X_train_scaled, y_train.ravel())
-                # Predicting Cross Validation Score
-                cv_dt = cross_val_score(estimator=classifier_dt, X=X_train_scaled, y=y_train.ravel(), cv=10)
-                print("CV: ", cv_dt.mean())
-
-                y_pred_dt_train = classifier_dt.predict(X_train_scaled)
-                accuracy_dt_train = accuracy_score(y_train, y_pred_dt_train)
-                print("Training set: ", accuracy_dt_train)
-
-                y_pred_dt_test = classifier_dt.predict(X_test_scaled)
-                accuracy_dt_test = accuracy_score(y_test, y_pred_dt_test)
-                print("Test set: ", accuracy_dt_test)
-
-                confusion_matrix(y_test, y_pred_dt_test)
-
-                tp_dt = confusion_matrix(y_test, y_pred_dt_test)[0, 0]
-                fp_dt = confusion_matrix(y_test, y_pred_dt_test)[0, 1]
-                tn_dt = confusion_matrix(y_test, y_pred_dt_test)[1, 1]
-                fn_dt = confusion_matrix(y_test, y_pred_dt_test)[1, 0]
-
-                print("\n")
-                print("Random Forest Classification")
-                from sklearn.ensemble import RandomForestClassifier
-
-                classifier_rf = RandomForestClassifier(criterion='entropy', max_features=4, n_estimators=800,
-                                                       random_state=33)
-                classifier_rf.fit(X_train_scaled, y_train.ravel())
-
-                # Predicting Cross Validation Score
-                cv_rf = cross_val_score(estimator=classifier_rf, X=X_train_scaled, y=y_train.ravel(), cv=10)
-                print("CV: ", cv_rf.mean())
-
-                y_pred_rf_train = classifier_rf.predict(X_train_scaled)
-                accuracy_rf_train = accuracy_score(y_train, y_pred_rf_train)
-                print("Training set: ", accuracy_rf_train)
-
-                y_pred_rf_test = classifier_rf.predict(X_test_scaled)
-                accuracy_rf_test = accuracy_score(y_test, y_pred_rf_test)
-                print("Test set: ", accuracy_rf_test)
-
-                confusion_matrix(y_test, y_pred_rf_test)
-
-                tp_rf = confusion_matrix(y_test, y_pred_rf_test)[0, 0]
-                fp_rf = confusion_matrix(y_test, y_pred_rf_test)[0, 1]
-                tn_rf = confusion_matrix(y_test, y_pred_rf_test)[1, 1]
-                fn_rf = confusion_matrix(y_test, y_pred_rf_test)[1, 0]
-
-                print("\n")
-                print("Perceptron Classification")
-
-                clf = Perceptron(verbose=3)
-                clf = clf.fit(X_train, y_train)
-                y_pred = clf.predict(X_test)
-
-                # Predicting Cross Validation Score
-                cv_pc = cross_val_score(estimator=clf, X=X_train_scaled, y=y_train.ravel(), cv=10)
-                print("CV: ", cv_pc.mean())
-
-                y_pred_pc_train = clf.predict(X_train_scaled)
-                accuracy_pc_train = accuracy_score(y_train, y_pred_pc_train)
-                print("Training set: ", accuracy_rf_train)
-
-                y_pred_pc_test = classifier_rf.predict(X_test_scaled)
-                accuracy_pc_test = accuracy_score(y_test, y_pred_pc_test)
-                print("Test set: ", accuracy_pc_test)
-
-                confusion_matrix(y_test, y_pred_pc_test)
-
-                tp_pc = confusion_matrix(y_test, y_pred_pc_test)[0, 0]
-                fp_pc = confusion_matrix(y_test, y_pred_pc_test)[0, 1]
-                tn_pc = confusion_matrix(y_test, y_pred_pc_test)[1, 1]
-                fn_pc = confusion_matrix(y_test, y_pred_pc_test)[1, 0]
-
-                models = [
-                    ('K-Nearest Neighbors (KNN)', tp_knn, fp_knn, tn_knn, fn_knn, accuracy_knn_train, accuracy_knn_test,
-                     cv_knn.mean()),
-                    ('Naive Bayes', tp_nb, fp_nb, tn_nb, fn_nb, accuracy_nb_train, accuracy_nb_test, cv_nb.mean()),
-                    ('Decision Tree Classification', tp_dt, fp_dt, tn_dt, fn_dt, accuracy_dt_train, accuracy_dt_test,
-                     cv_dt.mean()),
-                    ('Random Forest Tree Classification', tp_rf, fp_rf, tn_rf, fn_rf, accuracy_rf_train,
-                     accuracy_rf_test, cv_rf.mean()),
-                    ('Perceptron Classification', tp_pc, fp_pc, tn_pc, fn_pc, accuracy_pc_train, accuracy_pc_test,
-                     cv_pc.mean())]
-
-                predict = pd.DataFrame(data=models,
-                                       columns=['Model', 'True Positive', 'False Positive', 'True Negative',
-                                                'False Negative', 'Precision(training)', 'Precision(test)',
-                                                'Cross-Validation'])
-                print(predict)
-
-                f, axe = plt.subplots(1, 1, figsize=(18, 6))
-
-                predict.sort_values(by=['Cross-Validation'], ascending=False, inplace=True)
-
-                sns.barplot(x='Cross-Validation', y='Model', data=predict, ax=axe)
-                # axes[0].set(xlabel='Region', ylabel='Charges')
-                axe.set_xlabel('Cross-Validaton Score', size=16)
-                axe.set_ylabel('Model')
-                axe.set_xlim(0, 1.0)
-                axe.set_xticks(np.arange(0, 1.1, 0.1))
-                plt.show()
-
-                f, axes = plt.subplots(2, 1, figsize=(14, 10))
-
-                predict.sort_values(by=['Precision(training)'], ascending=False, inplace=True)
-
-                sns.barplot(x='Precision(training)', y='Model', data=predict, palette='Blues_d', ax=axes[0])
-                # axes[0].set(xlabel='Region', ylabel='Charges')
-                axes[0].set_xlabel('Precision (Training)', size=16)
-                axes[0].set_ylabel('Model')
-                axes[0].set_xlim(0, 1.0)
-                axes[0].set_xticks(np.arange(0, 1.1, 0.1))
-
-                print("\n")
-
-                predict.sort_values(by=['Precision(test)'], ascending=False, inplace=True)
-
-                sns.barplot(x='Precision(test)', y='Model', data=predict, palette='Reds_d', ax=axes[1])
-                # axes[0].set(xlabel='Region', ylabel='Charges')
-                axes[1].set_xlabel('Precision (Test)', size=16)
-                axes[1].set_ylabel('Model')
-                axes[1].set_xlim(0, 1.0)
-                axes[1].set_xticks(np.arange(0, 1.1, 0.1))
-
-                plt.show()
+                #tp_dt = confusion_matrix(y_test, y_pred_dt_test)[0, 0]
+                #fp_dt = confusion_matrix(y_test, y_pred_dt_test)[0, 1]
+                #tn_dt = confusion_matrix(y_test, y_pred_dt_test)[1, 1]
+                #fn_dt = confusion_matrix(y_test, y_pred_dt_test)[1, 0]
 
             elif option == 5:
                 X = whitewines.iloc[:, 0:11].values
