@@ -597,10 +597,23 @@ while option != 0:
                     f1[i] = metrics.f1_score(yhat, y_val)
                     i = i + 1
 
+                print('\n')
+                print('Predictive measures for training data')
                 print('Mean accuracy: ' + str(np.mean(acc, axis=0)))
                 print("Mean precision: " + str(np.mean(pre, axis=0)))
                 print("Mean recall: " + str(np.mean(rec, axis=0)))
                 print("Mean f1-score: " + str(np.mean(f1, axis=0)))
+                print('\n')
+
+                classifier_logistic = LogisticRegression(max_iter=5000)
+                classifier_logistic.fit(X_train, y_train)
+                # Test the model with the test set
+                pred = classifier_logistic.predict(X_test)
+                print('Predictive measures for test data')
+                print('Test accuracy: ' + str(metrics.accuracy_score(pred, y_test)))
+                print('Test accuracy: ' + str(metrics.precision_score(pred, y_test)))
+                print('Test accuracy: ' + str(metrics.recall_score(pred, y_test)))
+                print('Test accuracy: ' + str(metrics.f1_score(pred, y_test)))
 
             elif option == 5:
                 X = wines_binary.iloc[:, 0:12].values
