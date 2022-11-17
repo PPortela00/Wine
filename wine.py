@@ -714,15 +714,15 @@ while option != 0:
                 ann1.fit(X_train_scaled, y_train.ravel())
                 # Predicting Cross Validation Score
                 cv_ann = cross_val_score(estimator=ann1, X=X_train_scaled, y=y_train.ravel(), cv=10)
-                print("CV: ", cv_rf.mean())
+                print("CV:  = {:.2f} ".format(cv_ann.mean()))
 
                 y_pred_ann_train = ann1.predict(X_train_scaled)
                 accuracy_ann_train = accuracy_score(y_train, y_pred_ann_train)
-                print("Training set: ", accuracy_ann_train)
+                print("Training Set Accuracy:  = {:.2f} ".format(accuracy_ann_train))
 
                 y_pred_ann_test = ann1.predict(X_test_scaled)
                 accuracy_ann_test = accuracy_score(y_test, y_pred_ann_test)
-                print("Test set: ", accuracy_ann_test)
+                print("Test Set Accuracy:  = {:.2f} ".format(accuracy_ann_test))
 
                 tp_ann = confusion_matrix(y_test, y_pred_ann_test)[0, 0]
                 fp_ann = confusion_matrix(y_test, y_pred_ann_test)[0, 1]
