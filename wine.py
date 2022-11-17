@@ -84,14 +84,13 @@ def submenu3():
     print("\n")
     print("------ Modeling (ML Algorithms Application) Menu ------")
     print("[1] NaiveBayes")
-    print("[2] Better k for the KNN")
-    print("[3] KNN")
-    print("[4] Logistic Regression")
-    print("[5] Decision Tree")
-    print("[6] Model Tree")
-    print("[7] Artificial Neural Networks")
-    print("[8] Support Vector Machine")
-    print("[9] Random Forest")
+    print("[2] KNN")
+    print("[3] Logistic Regression")
+    print("[4] Decision Tree")
+    print("[5] Model Tree")
+    print("[6] Artificial Neural Networks")
+    print("[7] Support Vector Machine")
+    print("[8] Random Forest")
 
     """print("[1] NaiveBayes")
     print("[2] Better k for the KNN")
@@ -477,92 +476,50 @@ while option != 0:
                 fn_nb = confusion_matrix(y_test, y_pred_nb_test)[1, 0]
 
             elif option == 2:
-                print("\n ")
-                print("\n Red Wine")
+                # Train_test split
+                X = wines_binary_norm.iloc[:, 0:12].values
+                y = wines_binary_norm.iloc[:, 12:13].values.ravel()
+                X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=0)
 
-                X = redwines.iloc[:, 0:11].values
-                y = redwines.iloc[:, 11:12].values.ravel()
+                # Create a stratified 10-fold cross validation set
+                strtfdKFold = StratifiedKFold(n_splits=10, shuffle=True, random_state=0)
 
-                X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.5, random_state=0)
+                accd = dict()
+                pred = dict()
+                recd = dict()
+                f1d = dict()
+                acc = np.zeros((100))
+                pre = np.zeros((100))
+                rec = np.zeros((100))
+                f1 = np.zeros((100))
+                j = 0
+                for k in range(1, 200, 2):
+                    i = 0
+                    for train_index, val_index in strtfdKFold.split(X_train, y_train):
+                        X_t, X_val = X_train[train_index], X_train[val_index]
+                        y_t, y_val = y_train[train_index], y_train[val_index]
+                        classifier_knn = KNeighborsClassifier(n_neighbors=k)
+                        classifier_knn.fit(X_t, y_t)
+                        yhat = classifier_knn.predict(X_val)
+                        accd[i] = metrics.accuracy_score(yhat, y_val)
+                        pred[i] = metrics.precision_score(yhat, y_val)
+                        recd[i] = metrics.recall_score(yhat, y_val)
+                        f1d[i] = metrics.f1_score(yhat, y_val)
+                        i = i + 1
+                    accd_test = max(accd.values())
+                    i = list(accd.keys())[list(accd.values()).index(accd_test)]
+                    acc[j] = accd[i]
+                    pre[j] = pred[i]
+                    rec[j] = recd[i]
+                    f1[j] = recd[i]
+                    j += 1
 
-                neigh = KNeighborsClassifier(n_neighbors=25)
-                y_pred = neigh.fit(X_train, y_train).predict(X_test)
-
-                print(confusion_matrix(y_test, y_pred))
-                print("Number of mislabeled points out of a total %d points : %d" % (
-                X_test.shape[0], (y_test != y_pred).sum()))
-
-                accuracy = ((y_test != y_pred).sum() / X_test.shape[0]) * 100
-                print(accuracy, "%")
-
-                print("\n ")
-                print("\n White Wine")
-                X = whitewines.iloc[:, 0:11].values
-                y = whitewines.iloc[:, 11:12].values.ravel()
-
-                X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.5, random_state=0)
-
-                neigh = KNeighborsClassifier(n_neighbors=48)
-                y_pred = neigh.fit(X_train, y_train).predict(X_test)
-                print(confusion_matrix(y_test, y_pred))
-                print("Number of mislabeled points out of a total %d points : %d" % (
-                X_test.shape[0], (y_test != y_pred).sum()))
-
-                accuracy = ((y_test != y_pred).sum() / X_test.shape[0]) * 100
-                print(accuracy, "%")
+                print('Mean accuracy: ' + str(np.mean(acc, axis=0)))
+                print("Mean precision: " + str(np.mean(pre, axis=0)))
+                print("Mean recall: " + str(np.mean(rec, axis=0)))
+                print("Mean f1-score: " + str(np.mean(f1, axis=0)))
 
             elif option == 3:
-                X = redwines.iloc[:, 0:11].values
-                y = redwines.iloc[:, 11:12].values.ravel()
-                X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=0)
-                print("Train set:", X_train.shape, y_train.shape)
-                print("Test set:", X_test.shape, y_test.shape)
-
-                from sklearn.neighbors import KNeighborsClassifier
-                from sklearn.model_selection import cross_val_score
-
-                # Number of k from 1 to 50
-                k_range = range(1, 50)
-                k_scores = []
-                # Calculate cross validation score for every k number from 1 to 50
-                for k in k_range:
-                    knn = KNeighborsClassifier(n_neighbors=k)
-                    # It’s 10 fold cross validation with ‘accuracy’ scoring
-                    scores = cross_val_score(knn, X, y, cv=10, scoring="accuracy")
-                    k_scores.append(scores.mean())
-
-                # Plot accuracy for every k number between 1 and 50
-                plt.plot(k_range, k_scores)
-                plt.xlabel("Value of K for KNN - Red Wine")
-                plt.ylabel("Cross-validated accuracy")
-                plt.figure()
-
-                X = whitewines.iloc[:, 0:11].values
-                y = whitewines.iloc[:, 11:12].values.ravel()
-                X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=0)
-                print("Train set:", X_train.shape, y_train.shape)
-                print("Test set:", X_test.shape, y_test.shape)
-
-                from sklearn.neighbors import KNeighborsClassifier
-                from sklearn.model_selection import cross_val_score
-
-                # Number of k from 1 to 50
-                k_range = range(1, 50)
-                k_scores = []
-                # Calculate cross validation score for every k number from 1 to 50
-                for k in k_range:
-                    knn = KNeighborsClassifier(n_neighbors=k)
-                    # It’s 10 fold cross validation with ‘accuracy’ scoring
-                    scores = cross_val_score(knn, X, y, cv=10, scoring="accuracy")
-                    k_scores.append(scores.mean())
-
-                # Plot accuracy for every k number between 1 and 50
-                plt.plot(k_range, k_scores)
-                plt.xlabel("Value of K for KNN - White Wine")
-                plt.ylabel("Cross-validated accuracy")
-                plt.show()
-
-            elif option == 4:
 
                 # Train_test split
                 X = wines_binary.iloc[:, 0:12].values
@@ -607,7 +564,7 @@ while option != 0:
                 print('Test accuracy: ' + str(metrics.recall_score(pred, y_test)))
                 print('Test accuracy: ' + str(metrics.f1_score(pred, y_test)))
 
-            elif option == 5:
+            elif option == 4:
                 X = wines_binary.iloc[:, 0:12].values
                 y = wines_binary.iloc[:, 12:13].values.ravel()
 
@@ -657,7 +614,7 @@ while option != 0:
                 tn_dt = confusion_matrix(y_test, y_pred_dt_test)[1, 1]
                 fn_dt = confusion_matrix(y_test, y_pred_dt_test)[1, 0]
 
-            elif option == 6:
+            elif option == 5:
 
                 from sklearn import tree
                 from sklearn.metrics import confusion_matrix
@@ -686,7 +643,7 @@ while option != 0:
                 print(clf.score(X_test, y_test) * 100, "%")
                 print(confusion_matrix(y_test, y_pred))
 
-            elif option == 7:
+            elif option == 6:
                 X = wines_binary_norm.iloc[:, 0:12].values
                 y = wines_binary_norm.iloc[:, 12:13].values.ravel()
 
@@ -731,7 +688,7 @@ while option != 0:
                 tn_ann = confusion_matrix(y_test, y_pred_ann_test)[1, 1]
                 fn_ann = confusion_matrix(y_test, y_pred_ann_test)[1, 0]
 
-            elif option == 8:
+            elif option == 7:
 
                 # Train_test split
                 X = wines_binary_norm.iloc[:, 0:12].values
@@ -893,7 +850,7 @@ while option != 0:
                 print('Test accuracy: ' + str(metrics.recall_score(pred, y_test)))
                 print('Test accuracy: ' + str(metrics.f1_score(pred, y_test)))
 
-            elif option == 9:
+            elif option == 8:
                 X = wines_binary.iloc[:, 0:12].values
                 y = wines_binary.iloc[:, 12:13].values.ravel()
 
