@@ -353,8 +353,8 @@ while option != 0:
 
         while option != 0:
             if option == 1:
-                redwines["wineType"] = 0         #Red wine - 0
-                whitewines["wineType"] = 1       #White wine - 1
+                redwines["wine_type"] = 0         #Red wine - 0
+                whitewines["wine_type"] = 1       #White wine - 1
                 print("Red Wine")
                 print(redwines.head())
                 print("\nWhite Wine")
@@ -365,8 +365,8 @@ while option != 0:
                 wines.columns = wines.columns.str.replace(' ', '_')
                 print("\n All wines together")
                 print(wines)
-                redwines = redwines.drop(columns=['wineType'])
-                whitewines = whitewines.drop(columns=['wineType'])
+                redwines = redwines.drop(columns=['wine_type'])
+                whitewines = whitewines.drop(columns=['wine_type'])
 
             elif option == 3:
                 wines = wines.drop_duplicates()
