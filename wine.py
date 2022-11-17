@@ -392,8 +392,9 @@ while option != 0:
                         lst.append(0)  # 0 = below average
                     else:
                         lst.append(1)  # 1 = above average
-                wines_binary['quality_binary'] = lst
-                wines_binary = wines_binary.drop(columns=['quality'])
+                wines_binary['quality'] = lst
+                last_column = wines_binary.pop('quality')
+                wines_binary.insert(12, 'quality', last_column)
 
                 # DISCRETIZE QUALITY TO NORMALIZED DATASET
                 wines_binary_norm = wines_norm.copy()
@@ -403,8 +404,9 @@ while option != 0:
                         lst.append(0)  # 0 = below average
                     else:
                         lst.append(1)  # 1 = above average
-                wines_binary_norm['quality_binary'] = lst
-                wines_binary_norm = wines_binary_norm.drop(columns=['quality'])
+                wines_binary_norm['quality'] = lst
+                last_column = wines_binary_norm.pop('quality')
+                wines_binary_norm.insert(12, 'quality', last_column)
                 print('\n')
                 print('Normalized dataset ready')
                 print(wines_binary_norm)
