@@ -88,6 +88,16 @@ def submenu3():
     print("[1] NaiveBayes")
     print("[2] Better k for the KNN")
     print("[3] KNN")
+    print("[4] Logistic Regression")
+    print("[5] Decision Tree")
+    print("[6] Model Tree")
+    print("[7] Artificial Neural Networks")
+    print("[8] Support Vector Machine")
+    print("[9] Random Forest")
+
+    print("[1] NaiveBayes")
+    print("[2] Better k for the KNN")
+    print("[3] KNN")
     print("[4] Cross-Validation and Training and Test Set - Red Wine")
     print("[5] Cross-Validation and Training and Test Set - White Wine")
     print("[6] Decision Tree - Classification")
@@ -383,6 +393,7 @@ while option != 0:
                     else:
                         lst.append(1)  # 1 = above average
                 wines_binary['quality_binary'] = lst
+                wines_binary = wines_binary.drop(columns=['quality'])
 
                 # DISCRETIZE QUALITY TO NORMALIZED DATASET
                 wines_binary_norm = wines_norm.copy()
@@ -393,7 +404,7 @@ while option != 0:
                     else:
                         lst.append(1)  # 1 = above average
                 wines_binary_norm['quality_binary'] = lst
-
+                wines_binary_norm = wines_binary_norm.drop(columns=['quality'])
                 print('\n')
                 print('Normalized dataset ready')
                 print(wines_binary_norm)
