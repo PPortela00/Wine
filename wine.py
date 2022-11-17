@@ -436,7 +436,57 @@ while option != 0:
 
         while option != 0:
             if option == 1:
-                print("\n ")
+                X = wines_binary.iloc[:, 0:12].values
+                y = wines_binary.iloc[:, 12:13].values.ravel()
+
+                print(X)
+                print("\n")
+                print(y)
+                print("\n")
+
+                X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=0)
+                print("Shape of X_train: ", X_train.shape)
+                print("Shape of X_test: ", X_test.shape)
+                print("Shape of y_train: ", y_train.shape)
+                print("Shape of y_test", y_test.shape)
+
+                print("\nNaiveBayes")
+                gnb = GaussianNB()
+                y_pred = gnb.fit(X_train, y_train).predict(X_test)
+
+                cf_matrix = confusion_matrix(y_test, y_pred)
+                print(cf_matrix)
+
+                print("\nNumber of well predicted points out of a total %d points : %d" % (
+                X_test.shape[0], (y_test == y_pred).sum()))
+
+                accuracy = ((y_test == y_pred).sum() / X_test.shape[0]) * 100
+                print(accuracy, "%")
+
+                # Feature Scaling
+                from sklearn.preprocessing import StandardScaler
+
+                sc = StandardScaler()
+                X_train_scaled = sc.fit_transform(X_train)
+                X_test_scaled = sc.transform(X_test)
+
+                from sklearn.naive_bayes import GaussianNB
+
+                classifier_nb = GaussianNB()
+                classifier_nb.fit(X_train_scaled, y_train.ravel())
+
+                print("\nNaiveBayes")
+                # Predicting Cross Validation Score
+                cv_nb = cross_val_score(estimator=classifier_nb, X=X_train_scaled, y=y_train.ravel(), cv=10)
+                print("CV: ", cv_nb.mean())
+
+                y_pred_nb_train = classifier_nb.predict(X_train_scaled)
+                accuracy_nb_train = accuracy_score(y_train, y_pred_nb_train)
+                print("Training set: ", accuracy_nb_train)
+
+                y_pred_nb_test = classifier_nb.predict(X_test_scaled)
+                accuracy_nb_test = accuracy_score(y_test, y_pred_nb_test)
+                print("Test set: ", accuracy_nb_test)
 
             elif option == 2:
                 print("\n ")
