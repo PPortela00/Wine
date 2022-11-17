@@ -563,38 +563,35 @@ while option != 0:
 
             elif option == 4:
 
+                # Train_test split
                 X = wines_binary.iloc[:, 0:12].values
                 y = wines_binary.iloc[:, 12:13].values.ravel()
-                X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.1, random_state=0)
+                X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=0)
 
-                strtfdKFold = StratifiedKFold(n_splits=10)
-                kfold = strtfdKFold.split(X_train, y_train)
+                # Create a stratified 10-fold cross validation set
+                strtfdKFold = StratifiedKFold(n_splits=10, shuffle=True, random_state=0)
 
-                print("Shape of X_train: ", X_train.shape)
-                print("Shape of X_test: ", X_test.shape)
-                print("Shape of y_train: ", y_train.shape)
-                print("Shape of y_test", y_test.shape)
+                acc = np.zeros((10))
+                pre = np.zeros((10))
+                rec = np.zeros((10))
+                f1 = np.zeros((10))
+                i = 0
+                for train_index, val_index in strtfdKFold.split(X_train, y_train):
+                    X_t, X_val = X_train[train_index], X_train[val_index]
+                    y_t, y_val = y_train[train_index], y_train[val_index]
+                    classifier_logistic = LogisticRegression(max_iter=5000)
+                    classifier_logistic.fit(X_t, y_t)
+                    yhat = classifier_logistic.predict(X_val)
+                    acc[i] = metrics.accuracy_score(yhat, y_val)
+                    pre[i] = metrics.precision_score(yhat, y_val)
+                    rec[i] = metrics.recall_score(yhat, y_val)
+                    f1[i] = metrics.f1_score(yhat, y_val)
+                    i = i + 1
 
-                classifier_logistic = LogisticRegression(max_iter=1500)
-                classifier_logistic.fit(X_train, y_train)
-
-                cv_logistic = cross_val_score(estimator=classifier_logistic, X=X_train, y=y_train, cv=10)
-                print("CV: ", cv_logistic.mean())
-
-                y_pred_logistic_train = classifier_logistic.predict(X_train)
-                accuracy_logistic_train = accuracy_score(y_train, y_pred_logistic_train)
-                print("Training set accuracy: ", accuracy_logistic_train)
-
-                y_pred_logistic_test = classifier_logistic.predict(X_test)
-                accuracy_logistic_test = accuracy_score(y_test, y_pred_logistic_test)
-                print("Test set accuracy: ", accuracy_logistic_test)
-
-                print(confusion_matrix(y_test, y_pred_logistic_test))
-
-                #tp_dt = confusion_matrix(y_test, y_pred_dt_test)[0, 0]
-                #fp_dt = confusion_matrix(y_test, y_pred_dt_test)[0, 1]
-                #tn_dt = confusion_matrix(y_test, y_pred_dt_test)[1, 1]
-                #fn_dt = confusion_matrix(y_test, y_pred_dt_test)[1, 0]
+                print('Mean accuracy: ' + str(np.mean(acc, axis=0)))
+                print("Mean precision: " + str(np.mean(pre, axis=0)))
+                print("Mean recall: " + str(np.mean(rec, axis=0)))
+                print("Mean f1-score: " + str(np.mean(f1, axis=0)))
 
             elif option == 5:
                 X = wines_binary.iloc[:, 0:12].values
