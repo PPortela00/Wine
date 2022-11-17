@@ -450,19 +450,6 @@ while option != 0:
                 print("Shape of y_train: ", y_train.shape)
                 print("Shape of y_test", y_test.shape)
 
-                print("\nNaiveBayes")
-                gnb = GaussianNB()
-                y_pred = gnb.fit(X_train, y_train).predict(X_test)
-
-                cf_matrix = confusion_matrix(y_test, y_pred)
-                print(cf_matrix)
-
-                print("\nNumber of well predicted points out of a total %d points : %d" % (
-                X_test.shape[0], (y_test == y_pred).sum()))
-
-                accuracy = ((y_test == y_pred).sum() / X_test.shape[0]) * 100
-                print(accuracy, "%")
-
                 # Feature Scaling
                 from sklearn.preprocessing import StandardScaler
 
@@ -470,23 +457,37 @@ while option != 0:
                 X_train_scaled = sc.fit_transform(X_train)
                 X_test_scaled = sc.transform(X_test)
 
-                from sklearn.naive_bayes import GaussianNB
-
+                print("\nNaiveBayes")
                 classifier_nb = GaussianNB()
-                classifier_nb.fit(X_train_scaled, y_train.ravel())
+                classifier_nb1 = classifier_nb.fit(X_train_scaled, y_train.ravel())
+                y_pred = classifier_nb.fit(X_train, y_train).predict(X_test)
+
+                cf_matrix = confusion_matrix(y_test, y_pred)
+                print(cf_matrix)
+
+                print("\nNumber of well predicted points out of a total %d points: %d" % (
+                X_test.shape[0], (y_test == y_pred).sum()))
+
+                accuracy = ((y_test == y_pred).sum() / X_test.shape[0]) * 100
+                print("Precision = {:.2f} %".format(accuracy))
 
                 print("\nNaiveBayes")
                 # Predicting Cross Validation Score
-                cv_nb = cross_val_score(estimator=classifier_nb, X=X_train_scaled, y=y_train.ravel(), cv=10)
+                cv_nb = cross_val_score(estimator=classifier_nb1, X=X_train_scaled, y=y_train.ravel(), cv=10)
                 print("CV: ", cv_nb.mean())
 
-                y_pred_nb_train = classifier_nb.predict(X_train_scaled)
+                y_pred_nb_train = classifier_nb1.predict(X_train_scaled)
                 accuracy_nb_train = accuracy_score(y_train, y_pred_nb_train)
                 print("Training set: ", accuracy_nb_train)
 
-                y_pred_nb_test = classifier_nb.predict(X_test_scaled)
+                y_pred_nb_test = classifier_nb1.predict(X_test_scaled)
                 accuracy_nb_test = accuracy_score(y_test, y_pred_nb_test)
                 print("Test set: ", accuracy_nb_test)
+
+                tp_nb = confusion_matrix(y_test, y_pred_nb_test)[0, 0]
+                fp_nb = confusion_matrix(y_test, y_pred_nb_test)[0, 1]
+                tn_nb = confusion_matrix(y_test, y_pred_nb_test)[1, 1]
+                fn_nb = confusion_matrix(y_test, y_pred_nb_test)[1, 0]
 
             elif option == 2:
                 print("\n ")
