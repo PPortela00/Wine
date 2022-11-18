@@ -880,7 +880,7 @@ while option != 0:
 
                 y_pred_rf_test = classifier_rf.predict(X_test_scaled)
                 accuracy_rf_test = accuracy_score(y_test, y_pred_rf_test)
-                print("Training Set Accuracy:  = {:.2f} ".format(accuracy_rf_test))
+                print("Test Set Accuracy:  = {:.2f} ".format(accuracy_rf_test))
 
                 tp_rf = confusion_matrix(y_test, y_pred_rf_test)[0, 0]
                 fp_rf = confusion_matrix(y_test, y_pred_rf_test)[0, 1]
