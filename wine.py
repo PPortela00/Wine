@@ -1,26 +1,43 @@
-import matplotlib.pyplot as plt
+import warnings
+
+import inline
+import matplotlib
+from sklearn import cluster
+from sklearn import svm
+from sklearn.linear_model import Perceptron
+from sklearn.metrics import confusion_matrix
+from sklearn.metrics import silhouette_score
+from sklearn.naive_bayes import GaussianNB
+
+warnings.simplefilter(action = 'ignore', category=FutureWarning)
+warnings.filterwarnings('ignore')
+def ignore_warn(*args, **kwargs):
+    pass
+
+warnings.warn = ignore_warn #ignore annoying warning (from sklearn and seaborn)
+
 import numpy as np
 import pandas as pd
 import seaborn as sns
-from sklearn import cluster
-from sklearn import tree
+sns.set(style="ticks", color_codes=True, font_scale=1.5)
+from matplotlib import pyplot as plt
+
+from scipy import interp
 from sklearn import metrics
-from sklearn.ensemble import RandomForestClassifier
+from sklearn.preprocessing import label_binarize, StandardScaler, MinMaxScaler
+
+from sklearn.pipeline import Pipeline
+from sklearn.model_selection import cross_val_score, train_test_split
+from sklearn.metrics import roc_auc_score, roc_curve, auc, accuracy_score
+
 from sklearn.linear_model import LogisticRegression
-from sklearn import svm
-from sklearn.linear_model import Perceptron
-from sklearn.metrics import accuracy_score
-from sklearn.metrics import confusion_matrix
-from sklearn.metrics import silhouette_score
-from sklearn.model_selection import StratifiedKFold
-from sklearn.model_selection import cross_val_score
-from sklearn.model_selection import train_test_split
-from sklearn.naive_bayes import GaussianNB
-from sklearn.neighbors import KNeighborsClassifier
-from sklearn.preprocessing import MinMaxScaler
-from sklearn.preprocessing import StandardScaler
 from sklearn.tree import DecisionTreeClassifier
+from sklearn.ensemble import RandomForestClassifier
 from sklearn.neural_network import MLPClassifier
+from sklearn.neighbors import KNeighborsClassifier
+from skater.core.explanations import Interpretation
+from skater.model import InMemoryModel
+from sklearn.model_selection import GridSearchCV
 
 pd.set_option('display.max_columns', None)                  #para poder visualizar todas as colunas no display
 pd.set_option('display.width', 1000)
@@ -469,6 +486,237 @@ while option != 0:
                 plt.tight_layout()
                 plt.show()
 
+
+                def get_results(model, name, data, true_labels, target_names=['red', 'white'], results=None,
+                                reasume=False):
+
+                    if hasattr(model, 'layers'):
+                        param = wtp_dnn_model.history.params
+                        best = np.mean(wtp_dnn_model.history.history['val_acc'])
+                        predicted_labels = model.predict_classes(data)
+                        im_model = InMemoryModel(model.predict, examples=data, target_names=target_names)
+
+                    else:
+                        param = gs.best_params_
+                        best = gs.best_score_
+                        predicted_labels = model.predict(data).ravel()
+                        if hasattr(model, 'predict_proba'):
+                            im_model = InMemoryModel(model.predict_proba, examples=data, target_names=target_names)
+                        elif hasattr(clf, 'decision_function'):
+                            im_model = InMemoryModel(model.decision_function, examples=data, target_names=target_names)
+
+                    print('Mean Best Accuracy: {:2.2%}'.format(best))
+                    print('-' * 60)
+                    print('Best Parameters:')
+                    print(param)
+                    print('-' * 60)
+
+                    y_pred = model.predict(data).ravel()
+
+                    display_model_performance_metrics(true_labels, predicted_labels=predicted_labels,
+                                                      target_names=target_names)
+                    if len(target_names) == 2:
+                        ras = roc_auc_score(y_true=true_labels, y_score=y_pred)
+                    else:
+                        roc_auc_multiclass, ras = roc_auc_score_multiclass(y_true=true_labels, y_score=y_pred,
+                                                                           target_names=target_names)
+                        print('\nROC AUC Score by Classes:\n', roc_auc_multiclass)
+                        print('-' * 60)
+
+                    print('\n\n              ROC AUC Score: {:2.2%}'.format(ras))
+                    prob, score_roc, roc_auc = plot_model_roc_curve(model, data, true_labels, label_encoder=None,
+                                                                    class_names=target_names)
+
+                    interpreter = Interpretation(data, feature_names=cols)
+                    plots = interpreter.feature_importance.plot_feature_importance(im_model, progressbar=False,
+                                                                                   n_jobs=1, ascending=True)
+
+                    r1 = pd.DataFrame([(prob, best, np.round(accuracy_score(true_labels, predicted_labels), 4),
+                                        ras, roc_auc)], index=[name],
+                                      columns=['Prob', 'CV Accuracy', 'Accuracy', 'ROC AUC Score', 'ROC Area'])
+                    if reasume:
+                        results = r1
+                    elif (name in results.index):
+                        results.loc[[name], :] = r1
+                    else:
+                        results = results.append(r1)
+
+                    return results
+
+
+                def roc_auc_score_multiclass(y_true, y_score, target_names, average="macro"):
+
+                    # creating a set of all the unique classes using the actual class list
+                    unique_class = set(y_true)
+                    roc_auc_dict = {}
+                    mean_roc_auc = 0
+                    for per_class in unique_class:
+                        # creating a list of all the classes except the current class
+                        other_class = [x for x in unique_class if x != per_class]
+
+                        # marking the current class as 1 and all other classes as 0
+                        new_y_true = [0 if x in other_class else 1 for x in y_true]
+                        new_y_score = [0 if x in other_class else 1 for x in y_score]
+                        num_new_y_true = sum(new_y_true)
+
+                        # using the sklearn metrics method to calculate the roc_auc_score
+                        roc_auc = roc_auc_score(new_y_true, new_y_score, average=average)
+                        roc_auc_dict[target_names[per_class]] = np.round(roc_auc, 4)
+                        mean_roc_auc += num_new_y_true * np.round(roc_auc, 4)
+
+                    mean_roc_auc = mean_roc_auc / len(y_true)
+                    return roc_auc_dict, mean_roc_auc
+
+
+                def get_metrics(true_labels, predicted_labels):
+
+                    print('Accuracy:  {:2.2%} '.format(metrics.accuracy_score(true_labels, predicted_labels)))
+                    print('Precision: {:2.2%} '.format(
+                        metrics.precision_score(true_labels, predicted_labels, average='weighted')))
+                    print('Recall:    {:2.2%} '.format(
+                        metrics.recall_score(true_labels, predicted_labels, average='weighted')))
+                    print('F1 Score:  {:2.2%} '.format(
+                        metrics.f1_score(true_labels, predicted_labels, average='weighted')))
+
+
+                def train_predict_model(classifier, train_features, train_labels, test_features, test_labels):
+                    # build model
+                    classifier.fit(train_features, train_labels)
+                    # predict using model
+                    predictions = classifier.predict(test_features)
+                    return predictions
+
+
+                def display_confusion_matrix(true_labels, predicted_labels, target_names):
+
+                    total_classes = len(target_names)
+                    level_labels = [total_classes * [0], list(range(total_classes))]
+
+                    cm = metrics.confusion_matrix(y_true=true_labels, y_pred=predicted_labels)
+                    cm_frame = pd.DataFrame(data=cm,
+                                            columns=pd.MultiIndex(levels=[['Predicted:'], target_names],
+                                                                  codes=level_labels),
+                                            index=pd.MultiIndex(levels=[['Actual:'], target_names], codes=level_labels))
+                    print(cm_frame)
+
+
+                def display_classification_report(true_labels, predicted_labels, target_names):
+
+                    report = metrics.classification_report(y_true=true_labels, y_pred=predicted_labels,
+                                                           target_names=target_names)
+                    print(report)
+
+
+                def display_model_performance_metrics(true_labels, predicted_labels, target_names):
+                    print('Model Performance metrics:')
+                    print('-' * 30)
+                    get_metrics(true_labels=true_labels, predicted_labels=predicted_labels)
+                    print('\nModel Classification report:')
+                    print('-' * 30)
+                    display_classification_report(true_labels=true_labels, predicted_labels=predicted_labels,
+                                                  target_names=target_names)
+                    print('\nPrediction Confusion Matrix:')
+                    print('-' * 30)
+                    display_confusion_matrix(true_labels=true_labels, predicted_labels=predicted_labels,
+                                             target_names=target_names)
+
+
+                def plot_model_roc_curve(clf, features, true_labels, label_encoder=None, class_names=None):
+
+                    ## Compute ROC curve and ROC area for each class
+                    fpr = dict()
+                    tpr = dict()
+                    roc_auc = dict()
+                    if hasattr(clf, 'classes_'):
+                        class_labels = clf.classes_
+                    elif label_encoder:
+                        class_labels = label_encoder.classes_
+                    elif class_names:
+                        class_labels = class_names
+                    else:
+                        raise ValueError('Unable to derive prediction classes, please specify class_names!')
+                    n_classes = len(class_labels)
+
+                    if n_classes == 2:
+                        if hasattr(clf, 'predict_proba'):
+                            prb = clf.predict_proba(features)
+                            if prb.shape[1] > 1:
+                                y_score = prb[:, prb.shape[1] - 1]
+                            else:
+                                y_score = clf.predict(features).ravel()
+                            prob = True
+                        elif hasattr(clf, 'decision_function'):
+                            y_score = clf.decision_function(features)
+                            prob = False
+                        else:
+                            raise AttributeError("Estimator doesn't have a probability or confidence scoring system!")
+
+                        fpr, tpr, _ = roc_curve(true_labels, y_score)
+                        roc_auc = auc(fpr, tpr)
+
+                        plt.plot(fpr, tpr, label='ROC curve (area = {0:3.2%})'.format(roc_auc), linewidth=2.5)
+
+                    elif n_classes > 2:
+                        if hasattr(clf, 'clfs_'):
+                            y_labels = label_binarize(true_labels, classes=list(range(len(class_labels))))
+                        else:
+                            y_labels = label_binarize(true_labels, classes=class_labels)
+                        if hasattr(clf, 'predict_proba'):
+                            y_score = clf.predict_proba(features)
+                            prob = True
+                        elif hasattr(clf, 'decision_function'):
+                            y_score = clf.decision_function(features)
+                            prob = False
+                        else:
+                            raise AttributeError("Estimator doesn't have a probability or confidence scoring system!")
+
+                        for i in range(n_classes):
+                            fpr[i], tpr[i], _ = roc_curve(y_labels[:, i], y_score[:, i])
+                            roc_auc[i] = auc(fpr[i], tpr[i])
+
+                        ## Compute micro-average ROC curve and ROC area
+                        fpr["micro"], tpr["micro"], _ = roc_curve(y_labels.ravel(), y_score.ravel())
+                        roc_auc["micro"] = auc(fpr["micro"], tpr["micro"])
+
+                        ## Compute macro-average ROC curve and ROC area
+                        # First aggregate all false positive rates
+                        all_fpr = np.unique(np.concatenate([fpr[i] for i in range(n_classes)]))
+                        # Then interpolate all ROC curves at this points
+                        mean_tpr = np.zeros_like(all_fpr)
+                        for i in range(n_classes):
+                            mean_tpr += interp(all_fpr, fpr[i], tpr[i])
+                        # Finally average it and compute AUC
+                        mean_tpr /= n_classes
+                        fpr["macro"] = all_fpr
+                        tpr["macro"] = mean_tpr
+                        roc_auc["macro"] = auc(fpr["macro"], tpr["macro"])
+
+                        ## Plot ROC curves
+                        plt.figure(figsize=(6, 4))
+                        plt.plot(fpr["micro"], tpr["micro"], label='micro-average ROC curve (area = {0:2.2%})'
+                                                                   ''.format(roc_auc["micro"]), linewidth=3)
+
+                        plt.plot(fpr["macro"], tpr["macro"], label='macro-average ROC curve (area = {0:2.2%})'
+                                                                   ''.format(roc_auc["macro"]), linewidth=3)
+
+                        for i, label in enumerate(class_names):
+                            plt.plot(fpr[i], tpr[i], label='ROC curve of class {0} (area = {1:2.2%})'
+                                                           ''.format(label, roc_auc[i]), linewidth=2, linestyle=':')
+                        roc_auc = roc_auc["macro"]
+                    else:
+                        raise ValueError('Number of classes should be atleast 2 or more')
+
+                    plt.plot([0, 1], [0, 1], 'k--')
+                    plt.xlim([-0.01, 1.0])
+                    plt.ylim([0.0, 1.01])
+                    plt.xlabel('False Positive Rate')
+                    plt.ylabel('True Positive Rate')
+                    plt.title('Receiver Operating Characteristic (ROC) Curve')
+                    plt.legend(loc="lower right")
+                    plt.show()
+
+                    return prob, y_score, roc_auc
+
             else:
                 print("Invalid Option")
 
@@ -485,94 +733,95 @@ while option != 0:
                 submenu4()
                 while option != 0:
                     if option == 1:
-                        X = wines_binary.iloc[:, 0:12].values
-                        y = wines_binary.iloc[:, 12:13].values.ravel()
+                        class_ql = {'low': 0, 'medium': 1, 'high': 2}
+                        y_ql = wines_binary.quality.map(class_ql)
 
-                        X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=0)
-                        print("\nShape of X_train: ", X_train.shape)
-                        print("Shape of X_test: ", X_test.shape)
-                        print("Shape of y_train: ", y_train.shape)
-                        print("Shape of y_test", y_test.shape)
+                        wqp_class_labels = np.array(wines_binary['quality'])
+                        target_names = ['low', 'medium', 'high']
 
-                        # Feature Scaling
-                        sc = StandardScaler()
-                        X_train_scaled = sc.fit_transform(X_train)
-                        X_test_scaled = sc.transform(X_test)
+                        cols = wines_binary.columns
+                        cols = list(cols.drop(['quality']))
+                        X_train, X_test, y_train, y_test = train_test_split(wines.loc[:, cols], y_ql.values,
+                                                                            test_size=0.20, random_state=101)
 
-                        print("\nNaiveBayes")
-                        classifier_nb = GaussianNB()
-                        classifier_nb1 = classifier_nb.fit(X_train_scaled, y_train.ravel())
-                        y_pred = classifier_nb.fit(X_train, y_train).predict(X_test)
+                        clf = Pipeline([
+                            # ('pca', PCA(random_state = 101)),
+                            ('clf', GaussianNB())])
+                        param_grid = {}
 
-                        cf_matrix = confusion_matrix(y_test, y_pred)
-                        print(cf_matrix)
+                        gs = GridSearchCV(estimator=clf, param_grid=param_grid, scoring='accuracy', cv=5, verbose=1,
+                                          n_jobs=-1)
+                        NB = Pipeline([
+                            # ('sel', select_fetaures(select_cols=SEL)),
+                            ('scl', StandardScaler()),
+                            ('gs', gs)
+                        ])
 
-                        print("\nNumber of well predicted points out of a total %d points: %d" % (
-                            X_test.shape[0], (y_test == y_pred).sum()))
+                        NB.fit(X_train, y_train)
 
-                        accuracy = ((y_test == y_pred).sum() / X_test.shape[0]) * 100
-                        print("Precision = {:.2f} %".format(accuracy))
-
-                        # Predicting Cross Validation Score
-                        cv_nb = cross_val_score(estimator=classifier_nb1, X=X_train_scaled, y=y_train.ravel(), cv=10)
-                        print("\nCV: = {:.2f} ".format(cv_nb.mean()))
-
-                        y_pred_nb_train = classifier_nb1.predict(X_train_scaled)
-                        accuracy_nb_train = accuracy_score(y_train, y_pred_nb_train)
-                        print("Training Set Accuracy:  = {:.2f} ".format(accuracy_nb_train))
-
-                        y_pred_nb_test = classifier_nb1.predict(X_test_scaled)
-                        accuracy_nb_test = accuracy_score(y_test, y_pred_nb_test)
-                        print("Test Set Accuracy:  = {:.2f} ".format(accuracy_nb_test))
-
-                        tp_nb = confusion_matrix(y_test, y_pred_nb_test)[0, 0]
-                        fp_nb = confusion_matrix(y_test, y_pred_nb_test)[0, 1]
-                        tn_nb = confusion_matrix(y_test, y_pred_nb_test)[1, 1]
-                        fn_nb = confusion_matrix(y_test, y_pred_nb_test)[1, 0]
+                        results = get_results(NB, 'NB', X_test, y_test,
+                                              target_names=target_names, results=None, reasume=True)
 
                     elif option == 2:
-                        # Train_test split
-                        X = wines_binary_norm.iloc[:, 0:12].values
-                        y = wines_binary_norm.iloc[:, 12:13].values.ravel()
-                        X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=0)
+                        cols = wines_binary.columns
+                        cols = list(cols.drop(['quality']))
 
-                        # Create a stratified 10-fold cross validation set
-                        strtfdKFold = StratifiedKFold(n_splits=10, shuffle=True, random_state=0)
+                        cols_clean = cols.copy()
+                        cols_clean.remove('total_sulfur_dioxide')
+                        cols_clean.remove('residual_sugar')
 
-                        accd = dict()
-                        pred = dict()
-                        recd = dict()
-                        f1d = dict()
-                        acc = np.zeros((100))
-                        pre = np.zeros((100))
-                        rec = np.zeros((100))
-                        f1 = np.zeros((100))
-                        j = 0
-                        for k in range(1, 200, 2):
-                            i = 0
-                            for train_index, val_index in strtfdKFold.split(X_train, y_train):
-                                X_t, X_val = X_train[train_index], X_train[val_index]
-                                y_t, y_val = y_train[train_index], y_train[val_index]
-                                classifier_knn = KNeighborsClassifier(n_neighbors=k)
-                                classifier_knn.fit(X_t, y_t)
-                                yhat = classifier_knn.predict(X_val)
-                                accd[i] = metrics.accuracy_score(yhat, y_val)
-                                pred[i] = metrics.precision_score(yhat, y_val)
-                                recd[i] = metrics.recall_score(yhat, y_val)
-                                f1d[i] = metrics.f1_score(yhat, y_val)
-                                i = i + 1
-                            accd_test = max(accd.values())
-                            i = list(accd.keys())[list(accd.values()).index(accd_test)]
-                            acc[j] = accd[i]
-                            pre[j] = pred[i]
-                            rec[j] = recd[i]
-                            f1[j] = recd[i]
-                            j += 1
 
-                        print('Mean accuracy: ' + str(np.mean(acc, axis=0)))
-                        print("Mean precision: " + str(np.mean(pre, axis=0)))
-                        print("Mean recall: " + str(np.mean(rec, axis=0)))
-                        print("Mean f1-score: " + str(np.mean(f1, axis=0)))
+                        class select_fetaures(object):  # BaseEstimator, TransformerMixin,
+                            def __init__(self, select_cols):
+                                self.select_cols_ = select_cols
+
+                            def fit(self, X, Y):
+                                pass
+
+                            def transform(self, X):
+                                return X.loc[:, self.select_cols_]
+
+                            def fit_transform(self, X, Y):
+                                self.fit(X, Y)
+                                df = self.transform(X)
+                                return df
+
+                            def __getitem__(self, x):
+                                return self.X[x], self.Y[x]
+
+
+                        clf = Pipeline([
+                            # ('pca', PCA(random_state = 101)),
+                            ('clf', KNeighborsClassifier())])
+
+                        # a list of dictionaries to specify the parameters that we'd want to tune
+                        SEL = cols_clean
+                        n_components = [len(SEL) - 2, len(SEL) - 1, len(SEL)]
+                        whiten = [True, False]
+
+                        param_grid = \
+                            [{'clf__n_neighbors': [10, 11, 12, 13]
+                                 , 'clf__weights': ['distance']
+                                 , 'clf__algorithm': ['ball_tree']  # , 'brute', 'auto',  'kd_tree', 'brute']
+                                 , 'clf__leaf_size': [12, 11, 13]
+                                 , 'clf__p': [1]
+                              # ,'pca__n_components' : n_components
+                              # ,'pca__whiten' : whiten
+                              }]
+
+                        gs = GridSearchCV(estimator=clf, param_grid=param_grid, scoring='accuracy', cv=5, verbose=1,
+                                          n_jobs=-1)
+
+                        KNNC = Pipeline([
+                            ('sel', select_fetaures(select_cols=SEL)),
+                            ('scl', StandardScaler()),
+                            ('gs', gs)
+                        ])
+
+                        KNNC.fit(X_train, y_train)
+
+                        results = get_results(KNNC, 'KNeighborsClassifier', X_test, y_test,
+                                              target_names=target_names, results=results, reasume=False)
 
                     elif option == 3:
 
@@ -620,54 +869,45 @@ while option != 0:
                         print('Test accuracy: ' + str(metrics.f1_score(pred, y_test)))
 
                     elif option == 4:
-                        X = wines_binary.iloc[:, 0:12].values
-                        y = wines_binary.iloc[:, 12:13].values.ravel()
+                        class_ql = {'low': 0, 'medium': 1, 'high': 2}
+                        y_ql = wines_binary.quality.map(class_ql)
 
-                        X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=0)
-                        print("\nShape of X_train: ", X_train.shape)
-                        print("Shape of X_test: ", X_test.shape)
-                        print("Shape of y_train: ", y_train.shape)
-                        print("Shape of y_test", y_test.shape)
+                        wqp_class_labels = np.array(wines_binary['quality'])
+                        target_names = ['low', 'medium', 'high']
 
-                        # Feature Scaling
-                        sc = StandardScaler()
-                        X_train_scaled = sc.fit_transform(X_train)
-                        X_test_scaled = sc.transform(X_test)
+                        cols = wines.columns
+                        cols = list(cols.drop(['quality']))
+                        X_train, X_test, y_train, y_test = train_test_split(wines_binary.loc[:, cols], y_ql.values,
+                                                                            test_size=0.20, random_state=101)
 
-                        print("\nDecision tree")
-                        clf = tree.DecisionTreeClassifier()
-                        clf = clf.fit(X_train, y_train)
-                        y_pred = clf.predict(X_test)
-                        print(confusion_matrix(y_test, y_pred))
+                        clf = Pipeline([
+                            ('clf', DecisionTreeClassifier(random_state=101))])
 
-                        print("\nNumber of well predicted points out of a total %d points: %d" % (
-                            X_test.shape[0], (y_test == y_pred).sum()))
-                        accuracy = ((y_test == y_pred).sum() / X_test.shape[0]) * 100
-                        print("Precision = {:.2f} %".format(accuracy))
+                        # a list of dictionaries to specify the parameters that we'd want to tune
+                        criterion = ['gini', 'entropy']
+                        splitter = ['best']
+                        max_depth = [8, 9, 10, 11]  # [15, 20, 25]
+                        min_samples_leaf = [2, 3, 5]
+                        class_weight = ['balanced', None]
 
-                        # Fitting classifier to the Training set
-                        classifier_dt = DecisionTreeClassifier(criterion='gini', max_features=6, max_leaf_nodes=400,
-                                                               random_state=33)
-                        classifier_dt.fit(X_train_scaled, y_train.ravel())
+                        param_grid = \
+                            [{'clf__class_weight': class_weight
+                                 , 'clf__criterion': criterion
+                                 , 'clf__splitter': splitter
+                                 , 'clf__max_depth': max_depth
+                                 , 'clf__min_samples_leaf': min_samples_leaf
+                              }]
 
-                        # Predicting Cross Validation Score
-                        cv_dt = cross_val_score(estimator=classifier_dt, X=X_train_scaled, y=y_train.ravel(), cv=10)
-                        print("\nCV:  = {:.2f} ".format(cv_dt.mean()))
+                        gs = GridSearchCV(estimator=clf, param_grid=param_grid, scoring='accuracy', cv=5, verbose=1,
+                                          n_jobs=-1)
+                        DT = Pipeline([
+                            ('scl', StandardScaler()),
+                            ('gs', gs)
+                        ])
 
-                        y_pred_dt_train = classifier_dt.predict(X_train_scaled)
-                        accuracy_dt_train = accuracy_score(y_train, y_pred_dt_train)
-                        print("Training Set Accuracy:  = {:.2f} ".format(accuracy_dt_train))
+                        DT.fit(X_train, y_train)
 
-                        y_pred_dt_test = classifier_dt.predict(X_test_scaled)
-                        accuracy_dt_test = accuracy_score(y_test, y_pred_dt_test)
-                        print("Test Set Accuracy:  = {:.2f} ".format(accuracy_dt_test))
-
-                        confusion_matrix(y_test, y_pred_dt_test)
-
-                        tp_dt = confusion_matrix(y_test, y_pred_dt_test)[0, 0]
-                        fp_dt = confusion_matrix(y_test, y_pred_dt_test)[0, 1]
-                        tn_dt = confusion_matrix(y_test, y_pred_dt_test)[1, 1]
-                        fn_dt = confusion_matrix(y_test, y_pred_dt_test)[1, 0]
+                        results = get_results(DT, 'DT First', X_test, y_test, target_names=target_names, reasume=True)
 
                     elif option == 5:
 
@@ -906,51 +1146,56 @@ while option != 0:
                         print('Test accuracy: ' + str(metrics.f1_score(pred, y_test)))
 
                     elif option == 8:
-                        X = wines_binary.iloc[:, 0:12].values
-                        y = wines_binary.iloc[:, 12:13].values.ravel()
 
-                        X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=0)
-                        print("\nShape of X_train: ", X_train.shape)
-                        print("Shape of X_test: ", X_test.shape)
-                        print("Shape of y_train: ", y_train.shape)
-                        print("Shape of y_test", y_test.shape)
+                        class_ql = {'low': 0, 'medium': 1, 'high': 2}
+                        y_ql = wines_binary.quality.map(class_ql)
 
-                        # Feature Scaling
-                        sc = StandardScaler()
-                        X_train_scaled = sc.fit_transform(X_train)
-                        X_test_scaled = sc.transform(X_test)
+                        wqp_class_labels = np.array(wines_binary['quality'])
+                        target_names = ['low', 'medium', 'high']
 
-                        print("\nRandom Forest Classification")
-                        rf = RandomForestClassifier(max_depth=10, random_state=0)
-                        clf = rf.fit(X_train, y_train)
-                        y_pred = clf.predict(X_test)
-                        print(confusion_matrix(y_test, y_pred))
+                        cols = wines_binary.columns
+                        cols = list(cols.drop(['quality']))
+                        X_train, X_test, y_train, y_test = train_test_split(wines.loc[:, cols], y_ql.values,
+                                                                            test_size=0.20, random_state=101)
 
-                        print("\nNumber of well predicted points out of a total %d points: %d" % (
-                            X_test.shape[0], (y_test == y_pred).sum()))
-                        accuracy = ((y_test == y_pred).sum() / X_test.shape[0]) * 100
-                        print("Precision = {:.2f} %".format(accuracy))
+                        clf = Pipeline([
+                            # ('pca', PCA(random_state = 101)),
+                            ('clf', RandomForestClassifier(random_state=101))])
 
-                        classifier_rf = RandomForestClassifier(criterion='entropy', max_features=4, n_estimators=800,
-                                                               random_state=33)
-                        classifier_rf.fit(X_train_scaled, y_train.ravel())
+                        # a list of dictionaries to specify the parameters that we'd want to tune
+                        SEL = cols
+                        n_components = [len(SEL) - 2, len(SEL) - 1, len(SEL)]
+                        whiten = [True, False]
+                        criterion = ['gini', 'entropy']
+                        class_weight = ['balanced', None]
+                        n_estimators = [155, 175]
+                        max_depth = [20, None]  # , 3, 4, 5, 10] #
+                        min_samples_split = [2, 3, 4]
+                        min_samples_leaf = [1]  # , 2 , 3]
 
-                        # Predicting Cross Validation Score
-                        cv_rf = cross_val_score(estimator=classifier_rf, X=X_train_scaled, y=y_train.ravel(), cv=10)
-                        print("CV:  = {:.2f} ".format(cv_rf.mean()))
+                        param_grid = \
+                            [{  # 'clf__class_weight': class_weight
+                                'clf__criterion': criterion
+                                , 'clf__n_estimators': n_estimators
+                                , 'clf__min_samples_split': min_samples_split
+                                , 'clf__max_depth': max_depth
+                                # ,'clf__min_samples_leaf': min_samples_leaf
+                                # ,'pca__n_components' : n_components
+                                # ,'pca__whiten' : whiten
+                            }]
 
-                        y_pred_rf_train = classifier_rf.predict(X_train_scaled)
-                        accuracy_rf_train = accuracy_score(y_train, y_pred_rf_train)
-                        print("Training Set Accuracy:  = {:.2f} ".format(accuracy_rf_train))
+                        gs = GridSearchCV(estimator=clf, param_grid=param_grid, scoring='accuracy', cv=5, verbose=1,
+                                          n_jobs=-1)
+                        RF = Pipeline([
+                            # ('sel', select_fetaures(select_cols=SEL)),
+                            ('scl', StandardScaler()),
+                            ('gs', gs)
+                        ])
 
-                        y_pred_rf_test = classifier_rf.predict(X_test_scaled)
-                        accuracy_rf_test = accuracy_score(y_test, y_pred_rf_test)
-                        print("Test Set Accuracy:  = {:.2f} ".format(accuracy_rf_test))
+                        RF.fit(X_train, y_train)
 
-                        tp_rf = confusion_matrix(y_test, y_pred_rf_test)[0, 0]
-                        fp_rf = confusion_matrix(y_test, y_pred_rf_test)[0, 1]
-                        tn_rf = confusion_matrix(y_test, y_pred_rf_test)[1, 1]
-                        fn_rf = confusion_matrix(y_test, y_pred_rf_test)[1, 0]
+                        results = get_results(RF, 'RF', X_test, y_test,
+                                              target_names=target_names, results=None, reasume=True)
 
                     elif option == 10:
                         from sklearn import tree
