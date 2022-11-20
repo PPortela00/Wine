@@ -1,12 +1,5 @@
 import warnings
 
-import inline
-import matplotlib
-from sklearn import cluster
-from sklearn import svm
-from sklearn.linear_model import Perceptron
-from sklearn.metrics import confusion_matrix
-from sklearn.metrics import silhouette_score
 from sklearn.naive_bayes import GaussianNB
 
 warnings.simplefilter(action = 'ignore', category=FutureWarning)
@@ -21,20 +14,21 @@ import pandas as pd
 import seaborn as sns
 sns.set(style="ticks", color_codes=True, font_scale=1.5)
 from matplotlib import pyplot as plt
+#%matplotlib inline
 
 from scipy import interp
 from sklearn import metrics
-from sklearn.preprocessing import label_binarize, StandardScaler, MinMaxScaler
+from sklearn.preprocessing import label_binarize, StandardScaler
 
 from sklearn.pipeline import Pipeline
-from sklearn.model_selection import cross_val_score, train_test_split
+from sklearn.model_selection import train_test_split
 from sklearn.metrics import roc_auc_score, roc_curve, auc, accuracy_score
 
 from sklearn.linear_model import LogisticRegression
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.ensemble import RandomForestClassifier
-from sklearn.neural_network import MLPClassifier
 from sklearn.neighbors import KNeighborsClassifier
+#from mlxtend.classifier import StackingClassifier
 from skater.core.explanations import Interpretation
 from skater.model import InMemoryModel
 from sklearn.model_selection import GridSearchCV
@@ -124,33 +118,25 @@ def submenu4():
 def submenu5():
     print("\n")
     print("------ Modeling (ML Algorithms Application) Menu ------")
-    print("[1] NaiveBayes")
-    print("[2] KNN")
-    print("[3] Logistic Regression")
-    print("[4] Decision Tree")
-    print("[5] Model Tree")
-    print("[6] Artificial Neural Networks")
-    print("[7] Support Vector Machine")
-    print("[8] Random Forest")
-
+    print("[1] NaiveBayes - Smote")
+    print("[1] NaiveBayes - Oversampling")
+    print("[2] KNN - Smote")
+    print("[2] KNN - Oversampling")
+    print("[3] Logistic Regression - Smote")
+    print("[3] Logistic Regression - Oversampling")
+    print("[4] Decision Tree - Smote")
+    print("[4] Decision Tree - Oversampling")
+    print("[5] Model Tree - Smote")
+    print("[5] Model Tree - Oversampling")
+    print("[6] Artificial Neural Networks - Smote")
+    print("[6] Artificial Neural Networks - Oversampling")
+    print("[7] Support Vector Machine - Smote")
+    print("[7] Support Vector Machine - Oversampling")
+    print("[8] Random Forest - Smote")
+    print("[8] Random Forest - Oversampling")
     print("\n[0] Return to the program's main menu")
 
-    """
-    print("[4] Cross-Validation and Training and Test Set - Red Wine")
-    print("[5] Cross-Validation and Training and Test Set - White Wine")
-    print("[8] Confusion Matrix")
-    print("[9] Accuracy models - White Wine")
-    print("[10] Accuracy models - Red Wine")
-    print("[11] Tabela - White Wine")
-    print("[12] Tabela - Red Wine")
-    print("[13] K-Means Clustering - White Wine")
-    print("[14] K-Means Clustering - Red Wine")
-    print("[15] Hierarchical Clustering")
-    print("[18] Time - White Wine")
-    print("[19] Time - Red Wine")"""
-
     print("[0] Return to the program's main menu")
-
 
 while option != 0:
     if option == 1:
@@ -528,8 +514,8 @@ while option != 0:
                                                                     class_names=target_names)
 
                     interpreter = Interpretation(data, feature_names=cols)
-                    plots = interpreter.feature_importance.plot_feature_importance(im_model, progressbar=False,
-                                                                                   n_jobs=1, ascending=True)
+                    #plots = interpreter.feature_importance.plot_feature_importance(im_model.feature_names, progressbar=False,
+                    #                                                              n_jobs=1, ascending=True)
 
                     r1 = pd.DataFrame([(prob, best, np.round(accuracy_score(true_labels, predicted_labels), 4),
                                         ras, roc_auc)], index=[name],
@@ -717,6 +703,41 @@ while option != 0:
 
                     return prob, y_score, roc_auc
 
+                class_ql = {'low': 0, 'medium': 1, 'high': 2}
+                y_ql = wines_binary.quality.map(class_ql)
+
+                wqp_class_labels = np.array(wines_binary['quality'])
+                target_names = ['low', 'medium', 'high']
+
+                cols = wines_binary.columns
+                cols = list(cols.drop(['quality']))
+                X_train, X_test, y_train, y_test = train_test_split(wines_binary.loc[:, cols], y_ql.values, test_size=0.20,
+                                                                random_state=101)
+
+
+                class select_fetaures(object):  # BaseEstimator, TransformerMixin,
+                    def __init__(self, select_cols):
+                        self.select_cols_ = select_cols
+
+                    def fit(self, X, Y):
+                        pass
+
+                    def transform(self, X):
+                        return X.loc[:, self.select_cols_]
+
+                    def fit_transform(self, X, Y):
+                        self.fit(X, Y)
+                        df = self.transform(X)
+                        return df
+
+                def __getitem__(self, x):
+                    return self.X[x], self.Y[x]
+
+
+                cols_clean = cols.copy()
+                cols_clean.remove('total_sulfur_dioxide')
+                cols_clean.remove('residual_sugar')
+
             else:
                 print("Invalid Option")
 
@@ -731,19 +752,9 @@ while option != 0:
         while option != 0:
             if option == 1:
                 submenu4()
+                option = int(input("\nInsert the command that you want to execute:\n"))
                 while option != 0:
                     if option == 1:
-                        class_ql = {'low': 0, 'medium': 1, 'high': 2}
-                        y_ql = wines_binary.quality.map(class_ql)
-
-                        wqp_class_labels = np.array(wines_binary['quality'])
-                        target_names = ['low', 'medium', 'high']
-
-                        cols = wines_binary.columns
-                        cols = list(cols.drop(['quality']))
-                        X_train, X_test, y_train, y_test = train_test_split(wines.loc[:, cols], y_ql.values,
-                                                                            test_size=0.20, random_state=101)
-
                         clf = Pipeline([
                             # ('pca', PCA(random_state = 101)),
                             ('clf', GaussianNB())])
@@ -763,33 +774,6 @@ while option != 0:
                                               target_names=target_names, results=None, reasume=True)
 
                     elif option == 2:
-                        cols = wines_binary.columns
-                        cols = list(cols.drop(['quality']))
-
-                        cols_clean = cols.copy()
-                        cols_clean.remove('total_sulfur_dioxide')
-                        cols_clean.remove('residual_sugar')
-
-
-                        class select_fetaures(object):  # BaseEstimator, TransformerMixin,
-                            def __init__(self, select_cols):
-                                self.select_cols_ = select_cols
-
-                            def fit(self, X, Y):
-                                pass
-
-                            def transform(self, X):
-                                return X.loc[:, self.select_cols_]
-
-                            def fit_transform(self, X, Y):
-                                self.fit(X, Y)
-                                df = self.transform(X)
-                                return df
-
-                            def __getitem__(self, x):
-                                return self.X[x], self.Y[x]
-
-
                         clf = Pipeline([
                             # ('pca', PCA(random_state = 101)),
                             ('clf', KNeighborsClassifier())])
@@ -824,49 +808,49 @@ while option != 0:
                                               target_names=target_names, results=results, reasume=False)
 
                     elif option == 3:
+                        clf = Pipeline([
+                            # ('pca', PCA(random_state = 101)),
+                            ('clf', LogisticRegression(random_state=101))])
 
-                        # Train_test split
-                        X = wines_binary.iloc[:, 0:12].values
-                        y = wines_binary.iloc[:, 12:13].values.ravel()
-                        X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=0)
+                        # a list of dictionaries to specify the parameters that we'd want to tune
+                        SEL = cols_clean
+                        n_components = [len(SEL) - 2, len(SEL) - 1, len(SEL)]
+                        whiten = [True, False]
+                        C = [1.0]  # , 1e-06, 5e-07, 1e-05, 1e-04, 1e-03, 1e-02, 1e-01, 10.0, 100.0, 1000.0]
+                        tol = [1e-06]  # , 5e-07, 1e-05, 1e-04, 1e-03, 1e-02, 1e-01]
 
-                        # Create a stratified 10-fold cross validation set
-                        strtfdKFold = StratifiedKFold(n_splits=10, shuffle=True, random_state=0)
+                        param_grid = \
+                            [{'clf__C': C
+                                 , 'clf__solver': ['liblinear', 'saga']
+                                 , 'clf__penalty': ['l1', 'l2']
+                                 , 'clf__tol': tol
+                                 , 'clf__class_weight': ['balanced']
+                              # ,'pca__n_components' : n_components
+                              # ,'pca__whiten' : whiten
+                              },
+                             {'clf__C': C
+                                 , 'clf__max_iter': [3, 9, 2, 7, 4]
+                                 , 'clf__solver': ['newton-cg', 'sag', 'lbfgs']
+                                 , 'clf__penalty': ['l2']
+                                 , 'clf__tol': tol
+                                 , 'clf__class_weight': ['balanced']
+                              # ,'pca__n_components' : n_components
+                              # ,'pca__whiten' : whiten
+                              }]
 
-                        acc = np.zeros((10))
-                        pre = np.zeros((10))
-                        rec = np.zeros((10))
-                        f1 = np.zeros((10))
-                        i = 0
-                        for train_index, val_index in strtfdKFold.split(X_train, y_train):
-                            X_t, X_val = X_train[train_index], X_train[val_index]
-                            y_t, y_val = y_train[train_index], y_train[val_index]
-                            classifier_logistic = LogisticRegression(max_iter=5000)
-                            classifier_logistic.fit(X_t, y_t)
-                            yhat = classifier_logistic.predict(X_val)
-                            acc[i] = metrics.accuracy_score(yhat, y_val)
-                            pre[i] = metrics.precision_score(yhat, y_val)
-                            rec[i] = metrics.recall_score(yhat, y_val)
-                            f1[i] = metrics.f1_score(yhat, y_val)
-                            i = i + 1
+                        gs = GridSearchCV(estimator=clf, param_grid=param_grid, scoring='accuracy', cv=5, verbose=1,
+                                          n_jobs=-1)
 
-                        print('\n')
-                        print('Predictive measures for training data')
-                        print('Mean accuracy: ' + str(np.mean(acc, axis=0)))
-                        print("Mean precision: " + str(np.mean(pre, axis=0)))
-                        print("Mean recall: " + str(np.mean(rec, axis=0)))
-                        print("Mean f1-score: " + str(np.mean(f1, axis=0)))
-                        print('\n')
+                        LR = Pipeline([
+                            ('sel', select_fetaures(select_cols=SEL)),
+                            ('scl', StandardScaler()),
+                            ('gs', gs)
+                        ])
 
-                        classifier_logistic = LogisticRegression(max_iter=5000)
-                        classifier_logistic.fit(X_train, y_train)
-                        # Test the model with the test set
-                        pred = classifier_logistic.predict(X_test)
-                        print('Predictive measures for test data')
-                        print('Test accuracy: ' + str(metrics.accuracy_score(pred, y_test)))
-                        print('Test accuracy: ' + str(metrics.precision_score(pred, y_test)))
-                        print('Test accuracy: ' + str(metrics.recall_score(pred, y_test)))
-                        print('Test accuracy: ' + str(metrics.f1_score(pred, y_test)))
+                        LR.fit(X_train, y_train)
+
+                        results = get_results(LR, 'LogisticRegression', X_test, y_test,
+                                              target_names=target_names, results=results, reasume=False)
 
                     elif option == 4:
                         class_ql = {'low': 0, 'medium': 1, 'high': 2}
@@ -910,254 +894,15 @@ while option != 0:
                         results = get_results(DT, 'DT First', X_test, y_test, target_names=target_names, reasume=True)
 
                     elif option == 5:
-
-                        from sklearn import tree
-                        from sklearn.metrics import confusion_matrix
-                        from sklearn.model_selection import train_test_split
-
-                        print("White Wine")
-                        X = whitewines.iloc[:, 0:11].values
-                        y = whitewines.iloc[:, 11:12].values.ravel()
-                        X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.5, random_state=0)
-
-                        clf = tree.DecisionTreeClassifier()
-                        clf = clf.fit(X_train, y_train)
-                        y_pred = clf.predict(X_test)
-                        print(clf.score(X_test, y_test) * 100, "%")
-                        print(confusion_matrix(y_test, y_pred))
-
-                        print("Red Wine")
-                        X = redwines.iloc[:, 0:11].values
-                        y = redwines.iloc[:, 11:12].values.ravel()
-
-                        X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.5, random_state=0)
-
-                        clf = tree.DecisionTreeClassifier()
-                        clf = clf.fit(X_train, y_train)
-                        y_pred = clf.predict(X_test)
-                        print(clf.score(X_test, y_test) * 100, "%")
-                        print(confusion_matrix(y_test, y_pred))
+                        print("\n")
 
                     elif option == 6:
-                        X = wines_binary_norm.iloc[:, 0:12].values
-                        y = wines_binary_norm.iloc[:, 12:13].values.ravel()
-
-                        X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=0)
-                        print("\nShape of X_train: ", X_train.shape)
-                        print("Shape of X_test: ", X_test.shape)
-                        print("Shape of y_train: ", y_train.shape)
-                        print("Shape of y_test", y_test.shape)
-
-                        # Feature Scaling
-                        sc = StandardScaler()
-                        X_train_scaled = sc.fit_transform(X_train)
-                        X_test_scaled = sc.transform(X_test)
-
-                        ann = MLPClassifier(hidden_layer_sizes=(200, 100), max_iter=1000)
-                        ann.fit(X_train, y_train)
-                        y_pred = ann.predict(X_test)
-                        print("\nArtifial Neural Network")
-                        print(confusion_matrix(y_test, y_pred))
-
-                        print("\nNumber of well predicted points out of a total %d points: %d" % (
-                            X_test.shape[0], (y_test == y_pred).sum()))
-                        accuracy = ((y_test == y_pred).sum() / X_test.shape[0]) * 100
-                        print("Precision = {:.2f} %".format(accuracy))
-
-                        ann1 = MLPClassifier(hidden_layer_sizes=(200, 100), max_iter=1000)
-                        ann1.fit(X_train_scaled, y_train.ravel())
-                        # Predicting Cross Validation Score
-                        cv_ann = cross_val_score(estimator=ann1, X=X_train_scaled, y=y_train.ravel(), cv=10)
-                        print("CV: ", cv_rf.mean())
-
-                        y_pred_ann_train = ann1.predict(X_train_scaled)
-                        accuracy_ann_train = accuracy_score(y_train, y_pred_ann_train)
-                        print("Training set: ", accuracy_ann_train)
-
-                        y_pred_ann_test = ann1.predict(X_test_scaled)
-                        accuracy_ann_test = accuracy_score(y_test, y_pred_ann_test)
-                        print("Test set: ", accuracy_ann_test)
-
-                        tp_ann = confusion_matrix(y_test, y_pred_ann_test)[0, 0]
-                        fp_ann = confusion_matrix(y_test, y_pred_ann_test)[0, 1]
-                        tn_ann = confusion_matrix(y_test, y_pred_ann_test)[1, 1]
-                        fn_ann = confusion_matrix(y_test, y_pred_ann_test)[1, 0]
+                        print("\n")
 
                     elif option == 7:
-
-                        # Train_test split
-                        X = wines_binary_norm.iloc[:, 0:12].values
-                        y = wines_binary_norm.iloc[:, 12:13].values.ravel()
-                        X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=0)
-
-                        # Create a stratified 10-fold cross validation set
-                        strtfdKFold = StratifiedKFold(n_splits=10, shuffle=True, random_state=0)
-
-                        acc = np.zeros((10))
-                        pre = np.zeros((10))
-                        rec = np.zeros((10))
-                        f1 = np.zeros((10))
-                        i = 0
-                        for train_index, val_index in strtfdKFold.split(X_train, y_train):
-                            X_t, X_val = X_train[train_index], X_train[val_index]
-                            y_t, y_val = y_train[train_index], y_train[val_index]
-                            classifier_svm = svm.SVC(kernel='linear')
-                            classifier_svm.fit(X_t, y_t)
-                            yhat = classifier_svm.predict(X_val)
-                            acc[i] = metrics.accuracy_score(yhat, y_val)
-                            pre[i] = metrics.precision_score(yhat, y_val)
-                            rec[i] = metrics.recall_score(yhat, y_val)
-                            f1[i] = metrics.f1_score(yhat, y_val)
-                            i = i + 1
-
-                        print('\n Kernel is linear')
-                        print('Mean accuracy: ' + str(np.mean(acc, axis=0)))
-                        print("Mean precision: " + str(np.mean(pre, axis=0)))
-                        print("Mean recall: " + str(np.mean(rec, axis=0)))
-                        print("Mean f1-score: " + str(np.mean(f1, axis=0)))
-
-                        classifier_svm = classifier_svm = svm.SVC(kernel='linear')
-                        classifier_svm.fit(X_train, y_train)
-                        # Test the model with the test set
-                        pred = classifier_svm.predict(X_test)
-                        print('Test accuracy: ' + str(metrics.accuracy_score(pred, y_test)))
-                        print('Test accuracy: ' + str(metrics.precision_score(pred, y_test)))
-                        print('Test accuracy: ' + str(metrics.recall_score(pred, y_test)))
-                        print('Test accuracy: ' + str(metrics.f1_score(pred, y_test)))
-
-                        # Train_test split
-                        X = wines_binary_norm.iloc[:, 0:12].values
-                        y = wines_binary_norm.iloc[:, 12:13].values.ravel()
-                        X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=0)
-
-                        # Create a stratified 10-fold cross validation set
-                        strtfdKFold = StratifiedKFold(n_splits=10, shuffle=True, random_state=0)
-
-                        acc = np.zeros((10))
-                        pre = np.zeros((10))
-                        rec = np.zeros((10))
-                        f1 = np.zeros((10))
-                        i = 0
-                        for train_index, val_index in strtfdKFold.split(X_train, y_train):
-                            X_t, X_val = X_train[train_index], X_train[val_index]
-                            y_t, y_val = y_train[train_index], y_train[val_index]
-                            classifier_svm = svm.SVC(kernel='poly')
-                            classifier_svm.fit(X_t, y_t)
-                            yhat = classifier_svm.predict(X_val)
-                            acc[i] = metrics.accuracy_score(yhat, y_val)
-                            pre[i] = metrics.precision_score(yhat, y_val)
-                            rec[i] = metrics.recall_score(yhat, y_val)
-                            f1[i] = metrics.f1_score(yhat, y_val)
-                            i = i + 1
-
-                        print('\n Kernel is polynomial')
-                        print('Mean accuracy: ' + str(np.mean(acc, axis=0)))
-                        print("Mean precision: " + str(np.mean(pre, axis=0)))
-                        print("Mean recall: " + str(np.mean(rec, axis=0)))
-                        print("Mean f1-score: " + str(np.mean(f1, axis=0)))
-
-                        classifier_svm = classifier_svm = svm.SVC(kernel='poly')
-                        classifier_svm.fit(X_train, y_train)
-                        # Test the model with the test set
-                        pred = classifier_svm.predict(X_test)
-                        print('Test accuracy: ' + str(metrics.accuracy_score(pred, y_test)))
-                        print('Test accuracy: ' + str(metrics.precision_score(pred, y_test)))
-                        print('Test accuracy: ' + str(metrics.recall_score(pred, y_test)))
-                        print('Test accuracy: ' + str(metrics.f1_score(pred, y_test)))
-
-                        # Train_test split
-                        X = wines_binary_norm.iloc[:, 0:12].values
-                        y = wines_binary_norm.iloc[:, 12:13].values.ravel()
-                        X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=0)
-
-                        # Create a stratified 10-fold cross validation set
-                        strtfdKFold = StratifiedKFold(n_splits=10, shuffle=True, random_state=0)
-
-                        acc = np.zeros((10))
-                        pre = np.zeros((10))
-                        rec = np.zeros((10))
-                        f1 = np.zeros((10))
-                        i = 0
-                        for train_index, val_index in strtfdKFold.split(X_train, y_train):
-                            X_t, X_val = X_train[train_index], X_train[val_index]
-                            y_t, y_val = y_train[train_index], y_train[val_index]
-                            classifier_svm = svm.SVC(kernel='sigmoid')
-                            classifier_svm.fit(X_t, y_t)
-                            yhat = classifier_svm.predict(X_val)
-                            acc[i] = metrics.accuracy_score(yhat, y_val)
-                            pre[i] = metrics.precision_score(yhat, y_val)
-                            rec[i] = metrics.recall_score(yhat, y_val)
-                            f1[i] = metrics.f1_score(yhat, y_val)
-                            i = i + 1
-
-                        print('\n Kernel is sigmoid')
-                        print('Mean accuracy: ' + str(np.mean(acc, axis=0)))
-                        print("Mean precision: " + str(np.mean(pre, axis=0)))
-                        print("Mean recall: " + str(np.mean(rec, axis=0)))
-                        print("Mean f1-score: " + str(np.mean(f1, axis=0)))
-
-                        classifier_svm = classifier_svm = svm.SVC(kernel='sigmoid')
-                        classifier_svm.fit(X_train, y_train)
-                        # Test the model with the test set
-                        pred = classifier_svm.predict(X_test)
-                        print('Test accuracy: ' + str(metrics.accuracy_score(pred, y_test)))
-                        print('Test accuracy: ' + str(metrics.precision_score(pred, y_test)))
-                        print('Test accuracy: ' + str(metrics.recall_score(pred, y_test)))
-                        print('Test accuracy: ' + str(metrics.f1_score(pred, y_test)))
-
-                        # Train_test split
-                        X = wines_binary_norm.iloc[:, 0:12].values
-                        y = wines_binary_norm.iloc[:, 12:13].values.ravel()
-                        X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=0)
-
-                        # Create a stratified 10-fold cross validation set
-                        strtfdKFold = StratifiedKFold(n_splits=10, shuffle=True, random_state=0)
-
-                        acc = np.zeros((10))
-                        pre = np.zeros((10))
-                        rec = np.zeros((10))
-                        f1 = np.zeros((10))
-                        i = 0
-                        for train_index, val_index in strtfdKFold.split(X_train, y_train):
-                            X_t, X_val = X_train[train_index], X_train[val_index]
-                            y_t, y_val = y_train[train_index], y_train[val_index]
-                            classifier_svm = svm.SVC(kernel='rbf')
-                            classifier_svm.fit(X_t, y_t)
-                            yhat = classifier_svm.predict(X_val)
-                            acc[i] = metrics.accuracy_score(yhat, y_val)
-                            pre[i] = metrics.precision_score(yhat, y_val)
-                            rec[i] = metrics.recall_score(yhat, y_val)
-                            f1[i] = metrics.f1_score(yhat, y_val)
-                            i = i + 1
-
-                        print('\n Kernel is rbf')
-                        print('Mean accuracy: ' + str(np.mean(acc, axis=0)))
-                        print("Mean precision: " + str(np.mean(pre, axis=0)))
-                        print("Mean recall: " + str(np.mean(rec, axis=0)))
-                        print("Mean f1-score: " + str(np.mean(f1, axis=0)))
-
-                        classifier_svm = classifier_svm = svm.SVC(kernel='rbf')
-                        classifier_svm.fit(X_train, y_train)
-                        # Test the model with the test set
-                        pred = classifier_svm.predict(X_test)
-                        print('Test accuracy: ' + str(metrics.accuracy_score(pred, y_test)))
-                        print('Test accuracy: ' + str(metrics.precision_score(pred, y_test)))
-                        print('Test accuracy: ' + str(metrics.recall_score(pred, y_test)))
-                        print('Test accuracy: ' + str(metrics.f1_score(pred, y_test)))
+                        print("\n")
 
                     elif option == 8:
-
-                        class_ql = {'low': 0, 'medium': 1, 'high': 2}
-                        y_ql = wines_binary.quality.map(class_ql)
-
-                        wqp_class_labels = np.array(wines_binary['quality'])
-                        target_names = ['low', 'medium', 'high']
-
-                        cols = wines_binary.columns
-                        cols = list(cols.drop(['quality']))
-                        X_train, X_test, y_train, y_test = train_test_split(wines.loc[:, cols], y_ql.values,
-                                                                            test_size=0.20, random_state=101)
-
                         clf = Pipeline([
                             # ('pca', PCA(random_state = 101)),
                             ('clf', RandomForestClassifier(random_state=101))])
@@ -1194,797 +939,12 @@ while option != 0:
 
                         RF.fit(X_train, y_train)
 
+                        print(gs.best_params_)
+                        print(gs.best_score_)
+
                         results = get_results(RF, 'RF', X_test, y_test,
                                               target_names=target_names, results=None, reasume=True)
 
-                    elif option == 10:
-                        from sklearn import tree
-
-                        print("\n ")
-                        print("\n Red Wine")
-                        X = redwines.iloc[:, 0:11].values
-                        y = redwines.iloc[:, 11:12].values.ravel()
-
-                        X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.5, random_state=0)
-
-                        print("NaiveBayes")
-                        gnb = GaussianNB()
-                        y_pred = gnb.fit(X_train, y_train).predict(X_test)
-                        print(confusion_matrix(y_test, y_pred))
-                        print("Number of mislabeled points out of a total %d points : %d" % (
-                            X_test.shape[0], (y_test != y_pred).sum()))
-
-                        accuracynb = ((y_test != y_pred).sum() / X_test.shape[0]) * 100
-                        print(accuracynb, "%")
-
-                        print("KNN")
-                        neigh = KNeighborsClassifier(n_neighbors=48)
-                        y_pred = neigh.fit(X_train, y_train).predict(X_test)
-                        print(confusion_matrix(y_test, y_pred))
-                        print("Number of mislabeled points out of a total %d points : %d" % (
-                            X_test.shape[0], (y_test != y_pred).sum()))
-
-                        accuracyknn = ((y_test != y_pred).sum() / X_test.shape[0]) * 100
-                        print(accuracyknn, "%")
-
-                        print("Decision Tree")
-                        clf = tree.DecisionTreeClassifier()
-                        clf = clf.fit(X_train, y_train)
-                        y_pred = clf.predict(X_test)
-
-                        accuracydt = clf.score(X_test, y_test) * 100
-                        print(accuracydt, "%")
-                        print(confusion_matrix(y_test, y_pred))
-
-                        print("RandomForest")
-                        rf = RandomForestClassifier(max_depth=10, random_state=0)
-                        clf = rf.fit(X_train, y_train)
-                        y_pred = clf.predict(X_test)
-
-                        accuracyrf = clf.score(X_test, y_test) * 100
-                        print(accuracyrf, "%")
-                        print(confusion_matrix(y_test, y_pred))
-
-                        print("K-Means Clustering")
-                        rf = k_means = cluster.KMeans(n_clusters=2)
-                        clf = rf.fit(redwines)
-                        centroids = clf.cluster_centers_
-                        accuracykmc = silhouette_score(redwines, clf.labels_) * 100
-                        print(centroids)
-                        print(accuracykmc, "%")
-
-                        print("Perceptron Classification")
-
-                        scaler = MinMaxScaler()
-                        scaler.fit(redwines.iloc[:, 0:11])
-                        scaled_features = scaler.transform(redwines.iloc[:, 0:11])
-                        print(scaled_features)
-
-                        # volta a converter em dataframe
-                        print('\n')
-                        new = pd.DataFrame(data=scaled_features,
-                                           columns=["fixed_acidity",
-                                                    "volatile_acidity", "citric_acid", "residual_sugar", "chlorides",
-                                                    "free_sulfur_dioxide",
-                                                    "total_sulfur_dioxide", "density", "pH", "sulphates", "alcohol"])
-                        print(new)
-
-                        X = new.iloc[:, 0:11].values
-                        y = redwines.iloc[:, 11:12].values.ravel()
-
-                        X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=0)
-
-                        clf = Perceptron(verbose=3)
-                        clf = clf.fit(X_train, y_train)
-                        y_pred = clf.predict(X_test)
-                        accuracypc = clf.score(X_test, y_test) * 100
-                        print(accuracypc)
-
-                        models = [('K-Nearest Neighbors (KNN)', accuracyknn),
-                                  ('Naive Bayes', accuracynb),
-                                  ('Decision Tree Classification', accuracydt),
-                                  ('Random Forest Tree Classification', accuracyrf),
-                                  ('K-Means Clustering', accuracykmc),
-                                  ("Perceptron Classification", accuracypc)]
-
-                        predict = pd.DataFrame(data=models, columns=['Model', 'Accuracy'])
-                        print(predict)
-
-                        f, axe = plt.subplots(1, 1, figsize=(18, 6))
-
-                        predict.sort_values(by=['Accuracy'], ascending=False, inplace=True)
-
-                        sns.barplot(x='Accuracy', y='Model', data=predict, ax=axe)
-                        # axes[0].set(xlabel='Region', ylabel='Charges')
-                        axe.set_xlabel('Score in %)', size=16)
-                        axe.set_ylabel('Model')
-
-                        plt.show()
-                    elif option == 11:
-
-                        X = whitewines.iloc[:, 0:11].values
-                        y = whitewines.iloc[:, 11:12].values.ravel()
-
-                        X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=0)
-
-                        print("KNN")
-                        sc = StandardScaler()
-                        X_train_scaled = sc.fit_transform(X_train)
-                        X_test_scaled = sc.transform(X_test)
-                        classifier_knn = KNeighborsClassifier(leaf_size=1, metric='minkowski', n_neighbors=32,
-                                                              weights='distance')
-                        classifier_knn.fit(X_train_scaled, y_train.ravel())
-                        cv_knn = cross_val_score(estimator=classifier_knn, X=X_train_scaled, y=y_train.ravel(), cv=5)
-                        print("CV:", cv_knn)
-                        print("MEAN:", cv_knn.mean())
-
-                        print("\n")
-                        print("NaiveBayes")
-                        classifier_nb = GaussianNB()
-                        classifier_nb.fit(X_train_scaled, y_train.ravel())
-
-                        # Predicting Cross Validation Score
-                        cv_nb = cross_val_score(estimator=classifier_nb, X=X_train_scaled, y=y_train.ravel(), cv=5)
-                        print("CV:", cv_nb)
-                        print("MEAN:", cv_nb.mean())
-
-                        print("\n")
-                        print("Decision Tree")
-                        from sklearn.tree import DecisionTreeClassifier
-
-                        classifier_dt = DecisionTreeClassifier(criterion='gini', max_features=6, max_leaf_nodes=400,
-                                                               random_state=33)
-                        classifier_dt.fit(X_train_scaled, y_train.ravel())
-                        # Predicting Cross Validation Score
-                        cv_dt = cross_val_score(estimator=classifier_dt, X=X_train_scaled, y=y_train.ravel(), cv=5)
-                        print("CV:", cv_dt)
-                        print("MEAN:", cv_dt.mean())
-
-                        print("\n")
-                        print("Random Forest Classification")
-                        from sklearn.ensemble import RandomForestClassifier
-
-                        classifier_rf = RandomForestClassifier(criterion='entropy', max_features=4, n_estimators=800,
-                                                               random_state=33)
-                        classifier_rf.fit(X_train_scaled, y_train.ravel())
-
-                        # Predicting Cross Validation Score
-                        cv_rf = cross_val_score(estimator=classifier_rf, X=X_train_scaled, y=y_train.ravel(), cv=5)
-                        print("CV:", cv_rf)
-                        print("MEAN:", cv_rf.mean())
-
-                        print("\n")
-                        print("K-Means Clustering")
-
-                        print("\n")
-                        print("Perceptron Classification")
-                        clf = Perceptron(verbose=3)
-                        clf = clf.fit(X_train, y_train)
-                        y_pred = clf.predict(X_test)
-
-                        # Predicting Cross Validation Score
-                        cv_pc = cross_val_score(estimator=clf, X=X_train_scaled, y=y_train.ravel(), cv=5)
-                        print("CV:", cv_pc)
-                        print("MEAN:", cv_pc.mean())
-
-                        tableScores = {
-                            'Model': ['K-Nearest Neighbors (KNN)', 'Naive Bayes', 'Decision Tree Classification',
-                                      'Random Forest Tree Classification', 'Perceptron Classification'],
-                            'CV1': [cv_knn[0], cv_nb[0], cv_dt[0], cv_rf[0], cv_pc[0]],
-                            'CV2': [cv_knn[1], cv_nb[1], cv_dt[1], cv_rf[1], cv_pc[1]],
-                            'CV3': [cv_knn[2], cv_nb[2], cv_dt[2], cv_rf[2], cv_pc[2]],
-                            'CV4': [cv_knn[3], cv_nb[3], cv_dt[3], cv_rf[3], cv_pc[3]],
-                            'CV5': [cv_knn[4], cv_nb[4], cv_dt[4], cv_rf[4], cv_pc[4]],
-                            'Media': [cv_knn.mean(), cv_nb.mean(), cv_dt.mean(), cv_rf.mean(), cv_pc.mean()]}
-
-                        dfScores = pd.DataFrame(tableScores)
-                        # Create a column Rating_Rank which contains
-                        # the rank of each movie based on rating
-                        dfScores['Ranking'] = dfScores['Media'].rank(ascending=0)
-
-                        # Set the index to newly created column, Rating_Rank
-                        dfScores = dfScores.set_index('Ranking')
-                        dff = dfScores.sort_index()
-                        print(dff)
-
-                    elif option == 12:
-                        X = redwines.iloc[:, 0:11].values
-                        y = redwines.iloc[:, 11:12].values.ravel()
-
-                        X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=0)
-
-                        print("KNN")
-                        sc = StandardScaler()
-                        X_train_scaled = sc.fit_transform(X_train)
-                        X_test_scaled = sc.transform(X_test)
-                        classifier_knn = KNeighborsClassifier(leaf_size=1, metric='minkowski', n_neighbors=32,
-                                                              weights='distance')
-                        classifier_knn.fit(X_train_scaled, y_train.ravel())
-                        cv_knn = cross_val_score(estimator=classifier_knn, X=X_train_scaled, y=y_train.ravel(), cv=5)
-                        print("CV:", cv_knn)
-                        print("MEAN:", cv_knn.mean())
-
-                        print("\n")
-                        print("NaiveBayes")
-                        classifier_nb = GaussianNB()
-                        classifier_nb.fit(X_train_scaled, y_train.ravel())
-
-                        # Predicting Cross Validation Score
-                        cv_nb = cross_val_score(estimator=classifier_nb, X=X_train_scaled, y=y_train.ravel(), cv=5)
-                        print("CV:", cv_nb)
-                        print("MEAN:", cv_nb.mean())
-
-                        print("\n")
-                        print("Decision Tree")
-                        from sklearn.tree import DecisionTreeClassifier
-
-                        classifier_dt = DecisionTreeClassifier(criterion='gini', max_features=6, max_leaf_nodes=400,
-                                                               random_state=33)
-                        classifier_dt.fit(X_train_scaled, y_train.ravel())
-                        # Predicting Cross Validation Score
-                        cv_dt = cross_val_score(estimator=classifier_dt, X=X_train_scaled, y=y_train.ravel(), cv=5)
-                        print("CV:", cv_dt)
-                        print("MEAN:", cv_dt.mean())
-
-                        print("\n")
-                        print("Random Forest Classification")
-                        from sklearn.ensemble import RandomForestClassifier
-
-                        classifier_rf = RandomForestClassifier(criterion='entropy', max_features=4, n_estimators=800,
-                                                               random_state=33)
-                        classifier_rf.fit(X_train_scaled, y_train.ravel())
-
-                        # Predicting Cross Validation Score
-                        cv_rf = cross_val_score(estimator=classifier_rf, X=X_train_scaled, y=y_train.ravel(), cv=5)
-                        print("CV:", cv_rf)
-                        print("MEAN:", cv_rf.mean())
-
-                        print("\n")
-                        print("K-Means CLustering")
-
-                        print("\n")
-                        print("Perceptron Classification")
-                        clf = Perceptron(verbose=3)
-                        clf = clf.fit(X_train, y_train)
-                        y_pred = clf.predict(X_test)
-
-                        # Predicting Cross Validation Score
-                        cv_pc = cross_val_score(estimator=clf, X=X_train_scaled, y=y_train.ravel(), cv=5)
-                        print("CV:", cv_pc)
-                        print("MEAN:", cv_pc.mean())
-
-                        # d = {'K-Nearest Neighbors (KNN)':cv_knn  , 'Naive Bayes': cv_knn, 'Decision Tree Classification': cv_dt, 'Random Forest Tree Classification': cv_rf , 'Perceptron Classification' : cv_pc}
-                        # predict = pd.DataFrame(data=d)
-                        # print(predict)
-
-                        tableScores = {
-                            'Model': ['K-Nearest Neighbors (KNN)', 'Naive Bayes', 'Decision Tree Classification',
-                                      'Random Forest Tree Classification', 'Perceptron Classification'],
-                            'CV1': [cv_knn[0], cv_nb[0], cv_dt[0], cv_rf[0], cv_pc[0]],
-                            'CV2': [cv_knn[1], cv_nb[1], cv_dt[1], cv_rf[1], cv_pc[1]],
-                            'CV3': [cv_knn[2], cv_nb[2], cv_dt[2], cv_rf[2], cv_pc[2]],
-                            'CV4': [cv_knn[3], cv_nb[3], cv_dt[3], cv_rf[3], cv_pc[3]],
-                            'CV5': [cv_knn[4], cv_nb[4], cv_dt[4], cv_rf[4], cv_pc[4]],
-                            'Mean': [cv_knn.mean(), cv_nb.mean(), cv_dt.mean(), cv_rf.mean(), cv_pc.mean()]}
-
-                        dfScores = pd.DataFrame(tableScores)
-                        # Create a column Rating_Rank which contains
-                        # the rank of each movie based on rating
-                        dfScores['Ranking'] = dfScores['Mean'].rank(ascending=0)
-
-                        # Set the index to newly created column, Rating_Rank
-                        dfScores = dfScores.set_index('Ranking')
-                        dff = dfScores.sort_index()
-                        print(dff)
-
-                    elif option == 13:
-                        from sklearn import cluster
-                        from sklearn.metrics import silhouette_score
-
-                        X = whitewines.iloc[:, 0:11].values
-                        y = whitewines.iloc[:, 11:12].values.ravel()
-
-                        X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=0)
-
-                        rf = k_means = cluster.KMeans(n_clusters=2)
-                        clf = rf.fit(whitewines)
-                        centroids = clf.cluster_centers_
-                        score = silhouette_score(whitewines, clf.labels_)
-                        print(centroids)
-                        print(score)
-
-                    elif option == 14:
-                        from sklearn import cluster
-                        from sklearn.metrics import silhouette_score
-
-                        X = redwines.iloc[:, 0:11].values
-                        y = redwines.iloc[:, 11:12].values.ravel()
-
-                        X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=0)
-
-                        rf = k_means = cluster.KMeans(n_clusters=2)
-                        clf = rf.fit(redwines)
-                        centroids = clf.cluster_centers_
-                        score = silhouette_score(redwines, clf.labels_)
-                        print(centroids)
-                        print(score)
-
-                    elif option == 15:
-                        import pandas as pd
-                        from matplotlib import pyplot as plt
-                        from scipy.cluster.hierarchy import dendrogram
-                        from seaborn import scatterplot
-                        from sklearn.cluster import AgglomerativeClustering
-                        from sklearn.datasets import make_blobs
-                        import numpy as np
-
-                        nb_samples = 3000
-                        X, _ = make_blobs(n_samples=nb_samples, n_features=2, centers=8, cluster_std=2.0)
-                        ac = AgglomerativeClustering(n_clusters=8, linkage='complete')
-                        Y = ac.fit_predict(X)
-                        df = pd.DataFrame({" a ": X[:, 0], " b ": X[:, 1], " c ": Y})
-                        plt.title('Hierarchical Clustering Dendrogram')
-                        scatterplot(data=df, x=" a ", y=" b ", hue=" c ", palette=" deep ")
-                        plt.show()
-
-
-                        def plot_dendrogram(model, **kwargs):
-                            counts = np.zeros(model.children_.shape[0])
-                            n_samples = len(model.labels_)
-                            for i, merge in enumerate(model.children_):
-                                current_count = 0
-                                for child_idx in merge:
-                                    if child_idx < n_samples:
-                                        current_count += 1
-                                    else:
-                                        current_count += counts[child_idx - n_samples]
-                                        counts[i] = current_count
-                            linkage_matrix = np.column_stack([model.children_, model.distances_, counts]).astype(float)
-                            dendrogram(linkage_matrix, **kwargs)
-
-                            nb_samples = 3000
-                            X, _ = make_blobs(n_samples=nb_samples, n_features=2, centers=8, cluster_std=2.0)
-                            ac = AgglomerativeClustering(distance_threshold=0, n_clusters=None)
-                            Y = ac.fit_predict(X)
-                            plt.title('Hierarchical Clustering  Dendrogram')
-                            plot_dendrogram(ac, truncate_mode='level', p=3)
-                            plt.xlabel("Number of points in node (or index of point if  no parenthesis).")
-                            plt.show()
-
-                    elif option == 16:
-
-                        from sklearn.linear_model import Perceptron
-                        from sklearn.metrics import confusion_matrix
-                        from sklearn.model_selection import train_test_split
-
-                        scaler = MinMaxScaler()
-                        scaler.fit(redwines.iloc[:, 0:11])
-                        scaled_features = scaler.transform(redwines.iloc[:, 0:11])
-                        print(scaled_features)
-
-                        # volta a converter em dataframe
-                        print('\n')
-                        new = pd.DataFrame(data=scaled_features,
-                                           columns=["fixed_acidity",
-                                                    "volatile_acidity", "citric_acid", "residual_sugar", "chlorides",
-                                                    "free_sulfur_dioxide",
-                                                    "total_sulfur_dioxide", "density", "pH", "sulphates", "alcohol"])
-                        print(new)
-
-                        X = new.iloc[:, 0:11].values
-                        y = redwines.iloc[:, 11:12].values.ravel()
-
-                        X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=0)
-
-                        clf = Perceptron(verbose=3)
-                        clf = clf.fit(X_train, y_train)
-                        y_pred = clf.predict(X_test)
-                        print(clf.score(X_test, y_test))
-                        print(confusion_matrix(y_test, y_pred))
-
-                    elif option == 17:
-                        from sklearn.linear_model import Perceptron
-                        from sklearn.metrics import confusion_matrix
-                        from sklearn.model_selection import train_test_split
-
-                        scaler = MinMaxScaler()
-                        scaler.fit(whitewines.iloc[:, 0:11])
-                        scaled_features = scaler.transform(whitewines.iloc[:, 0:11])
-                        print(scaled_features)
-
-                        # volta a converter em dataframe
-                        print('\n')
-                        new = pd.DataFrame(data=scaled_features,
-                                           columns=["fixed_acidity",
-                                                    "volatile_acidity", "citric_acid", "residual_sugar", "chlorides",
-                                                    "free_sulfur_dioxide",
-                                                    "total_sulfur_dioxide", "density", "pH", "sulphates", "alcohol"])
-                        print(new)
-
-                        X = new.iloc[:, 0:11].values
-                        y = whitewines.iloc[:, 11:12].values.ravel()
-
-                        X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=0)
-
-                        clf = Perceptron(verbose=3)
-                        clf = clf.fit(X_train, y_train)
-                        y_pred = clf.predict(X_test)
-                        print(clf.score(X_test, y_test))
-                        print(confusion_matrix(y_test, y_pred))
-
-                    elif option == 18:
-                        def naiveBayes():
-
-                            print("\n")
-                            print("\n Red Wine")
-
-                            X = redwines.iloc[:, 0:11].values
-                            y = redwines.iloc[:, 11:12].values.ravel()
-
-                            X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.5, random_state=0)
-
-                            print("NaiveBayes")
-                            gnb = GaussianNB()
-                            y_pred = gnb.fit(X_train, y_train).predict(X_test)
-
-                            cf_matrix = confusion_matrix(y_test, y_pred)
-                            print(cf_matrix)
-
-                            plt.show()
-
-                            print("Number of mislabeled points out of a total %d points : %d" % (
-                                X_test.shape[0], (y_test != y_pred).sum()))
-
-                            accuracy = ((y_test != y_pred).sum() / X_test.shape[0]) * 100
-                            print(accuracy, "%")
-
-
-                        def knn():
-                            print("\n")
-                            print("\nRed Wine")
-
-                            X = redwines.iloc[:, 0:11].values
-                            y = redwines.iloc[:, 11:12].values.ravel()
-
-                            X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.5, random_state=0)
-
-                            neigh = KNeighborsClassifier(n_neighbors=25)
-                            y_pred = neigh.fit(X_train, y_train).predict(X_test)
-
-                            print(confusion_matrix(y_test, y_pred))
-                            print("Number of mislabeled points out of a total %d points : %d" % (
-                                X_test.shape[0], (y_test != y_pred).sum()))
-
-                            accuracy = ((y_test != y_pred).sum() / X_test.shape[0]) * 100
-                            print(accuracy, "%")
-
-
-                        def dt():
-                            from sklearn import tree
-
-                            print("Red Wine")
-                            X = redwines.iloc[:, 0:11].values
-                            y = redwines.iloc[:, 11:12].values.ravel()
-
-                            X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.5, random_state=0)
-
-                            clf = tree.DecisionTreeClassifier()
-                            clf = clf.fit(X_train, y_train)
-                            y_pred = clf.predict(X_test)
-                            print(clf.score(X_test, y_test) * 100, "%")
-                            print(confusion_matrix(y_test, y_pred))
-
-
-                        def rf():
-                            print("\n")
-                            print("Red Wine")
-                            X = redwines.iloc[:, 0:11].values
-                            y = redwines.iloc[:, 11:12].values.ravel()
-                            X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=0)
-
-                            rf = RandomForestClassifier(max_depth=10, random_state=0)
-                            clf = rf.fit(X_train, y_train)
-                            y_pred = clf.predict(X_test)
-                            print(clf.score(X_test, y_test) * 100, "%")
-                            print(confusion_matrix(y_test, y_pred))
-
-
-                        def k_means():
-
-                            from sklearn import cluster
-                            from sklearn.metrics import silhouette_score
-
-                            X = redwines.iloc[:, 0:11].values
-                            y = redwines.iloc[:, 11:12].values.ravel()
-                            X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=0)
-                            rf = k_means = cluster.KMeans(n_clusters=2)
-                            clf = rf.fit(redwines)
-                            centroids = clf.cluster_centers_
-                            score = silhouette_score(redwines, clf.labels_)
-                            print(centroids)
-                            print(score)
-
-
-                        def perceptron():
-                            from sklearn.linear_model import Perceptron
-                            from sklearn.metrics import confusion_matrix
-                            from sklearn.model_selection import train_test_split
-
-                            scaler = MinMaxScaler()
-                            scaler.fit(redwines.iloc[:, 0:11])
-                            scaled_features = scaler.transform(redwines.iloc[:, 0:11])
-                            print(scaled_features)
-
-                            # volta a converter em dataframe
-                            print('\n')
-                            new = pd.DataFrame(data=scaled_features,
-                                               columns=["fixed_acidity",
-                                                        "volatile_acidity", "citric_acid", "residual_sugar",
-                                                        "chlorides",
-                                                        "free_sulfur_dioxide",
-                                                        "total_sulfur_dioxide", "density", "pH", "sulphates",
-                                                        "alcohol"])
-                            print(new)
-
-                            X = new.iloc[:, 0:11].values
-                            y = redwines.iloc[:, 11:12].values.ravel()
-
-                            X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=0)
-
-                            clf = Perceptron(verbose=3)
-                            clf = clf.fit(X_train, y_train)
-                            y_pred = clf.predict(X_test)
-                            print(clf.score(X_test, y_test))
-                            print(confusion_matrix(y_test, y_pred))
-
-
-                        import datetime
-
-                        starting_timenb = datetime.datetime.now()
-                        naiveBayes()
-                        end_timenb = datetime.datetime.now()
-                        difnaiveBayes = end_timenb - starting_timenb
-
-                        starting_timeknn = datetime.datetime.now()
-                        knn()
-                        end_timeknn = datetime.datetime.now()
-                        difknn = end_timeknn - starting_timeknn
-
-                        starting_timedt = datetime.datetime.now()
-                        dt()
-                        end_timedt = datetime.datetime.now()
-                        difdt = end_timedt - starting_timedt
-
-                        starting_timerf = datetime.datetime.now()
-                        rf()
-                        end_timerf = datetime.datetime.now()
-                        difrf = end_timerf - starting_timerf
-
-                        starting_timek_means = datetime.datetime.now()
-                        k_means()
-                        end_timek_means = datetime.datetime.now()
-                        difk_means = end_timek_means - starting_timek_means
-
-                        starting_timeperceptron = datetime.datetime.now()
-                        perceptron()
-                        end_timeperceptron = datetime.datetime.now()
-                        difperceptron = end_timeperceptron - starting_timeperceptron
-
-                        print(difnaiveBayes, difknn, difdt, difrf, difk_means, difperceptron)
-                        print("\n")
-
-                        tableScores = {
-                            'Model': ['K-Nearest Neighbors (KNN)', 'Naive Bayes', 'Decision Tree Classification',
-                                      'Random Forest Tree Classification', 'Perceptron Classification',
-                                      'K-Means Clustering'],
-                            'Time': [difknn, difnaiveBayes, difdt, difrf, difperceptron, difk_means], }
-
-                        dfScores = pd.DataFrame(tableScores)
-                        # Create a column Rating_Rank which contains
-                        # the rank of each movie based on rating
-                        dfScores['Ranking'] = dfScores['Time'].rank(ascending=1)
-
-                        # Set the index to newly created column, Rating_Rank
-                        dfScores = dfScores.set_index('Ranking')
-                        dff = dfScores.sort_index()
-                        print(dff)
-
-                        tabelatempos = {
-                            'Model': ['K-Nearest Neighbors (KNN)', 'Naive Bayes', 'Decision Tree Classification',
-                                      'Random Forest Tree Classification', 'Perceptron Classification',
-                                      'K-Means Clustering'],
-                            'Time': [0.038773, 0.007979, 0.009033, 0.258831, 0.031914, 0.142420], }
-
-                        dftempo = pd.DataFrame(tabelatempos)
-                        sns.barplot(x=dftempo['Model'], y=dftempo['Time'], data=pd.melt(dftempo))
-                        plt.title("Execution time of the different models")
-                        plt.show()
-
-                    elif option == 23:
-                        def naiveBayes():
-
-                            print("\n ")
-                            print("\n White Wine")
-
-                            X = whitewines.iloc[:, 0:11].values
-                            y = whitewines.iloc[:, 11:12].values.ravel()
-
-                            X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.5, random_state=0)
-
-                            print("NaiveBayes")
-                            gnb = GaussianNB()
-                            y_pred = gnb.fit(X_train, y_train).predict(X_test)
-
-                            cf_matrix = confusion_matrix(y_test, y_pred)
-                            print(cf_matrix)
-
-                            plt.show()
-
-                            print("Number of mislabeled points out of a total %d points : %d" % (
-                                X_test.shape[0], (y_test != y_pred).sum()))
-
-                            accuracy = ((y_test != y_pred).sum() / X_test.shape[0]) * 100
-                            print(accuracy, "%")
-
-
-                        def knn():
-                            print("\n ")
-                            print("\n White Wine")
-
-                            X = whitewines.iloc[:, 0:11].values
-                            y = whitewines.iloc[:, 11:12].values.ravel()
-
-                            X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.5, random_state=0)
-
-                            neigh = KNeighborsClassifier(n_neighbors=25)
-                            y_pred = neigh.fit(X_train, y_train).predict(X_test)
-
-                            print(confusion_matrix(y_test, y_pred))
-                            print("Number of mislabeled points out of a total %d points : %d" % (
-                                X_test.shape[0], (y_test != y_pred).sum()))
-
-                            accuracy = ((y_test != y_pred).sum() / X_test.shape[0]) * 100
-                            print(accuracy, "%")
-
-
-                        def dt():
-                            from sklearn import tree
-
-                            print("White Wine")
-                            X = whitewines.iloc[:, 0:11].values
-                            y = whitewines.iloc[:, 11:12].values.ravel()
-
-                            X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.5, random_state=0)
-
-                            clf = tree.DecisionTreeClassifier()
-                            clf = clf.fit(X_train, y_train)
-                            y_pred = clf.predict(X_test)
-                            print(clf.score(X_test, y_test) * 100, "%")
-                            print(confusion_matrix(y_test, y_pred))
-
-
-                        def rf():
-                            print("\n")
-                            print("White Wine")
-                            X = whitewines.iloc[:, 0:11].values
-                            y = whitewines.iloc[:, 11:12].values.ravel()
-                            X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=0)
-
-                            rf = RandomForestClassifier(max_depth=10, random_state=0)
-                            clf = rf.fit(X_train, y_train)
-                            y_pred = clf.predict(X_test)
-                            print(clf.score(X_test, y_test) * 100, "%")
-                            print(confusion_matrix(y_test, y_pred))
-
-
-                        def k_means():
-                            from sklearn import cluster
-                            from sklearn.metrics import silhouette_score
-
-                            X = whitewines.iloc[:, 0:11].values
-                            y = whitewines.iloc[:, 11:12].values.ravel()
-                            X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=0)
-                            rf = k_means = cluster.KMeans(n_clusters=2)
-                            clf = rf.fit(redwines)
-                            centroids = clf.cluster_centers_
-                            score = silhouette_score(redwines, clf.labels_)
-                            print(centroids)
-                            print(score)
-
-
-                        def perceptron():
-                            from sklearn.linear_model import Perceptron
-                            from sklearn.metrics import confusion_matrix
-                            from sklearn.model_selection import train_test_split
-
-                            scaler = MinMaxScaler()
-                            scaler.fit(whitewines.iloc[:, 0:11])
-                            scaled_features = scaler.transform(whitewines.iloc[:, 0:11])
-                            print(scaled_features)
-
-                            # volta a converter em dataframe
-                            print('\n')
-                            new = pd.DataFrame(data=scaled_features,
-                                               columns=["fixed_acidity",
-                                                        "volatile_acidity", "citric_acid", "residual_sugar",
-                                                        "chlorides",
-                                                        "free_sulfur_dioxide",
-                                                        "total_sulfur_dioxide", "density", "pH", "sulphates",
-                                                        "alcohol"])
-                            print(new)
-
-                            X = new.iloc[:, 0:11].values
-                            y = whitewines.iloc[:, 11:12].values.ravel()
-
-                            X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=0)
-
-                            clf = Perceptron(verbose=3)
-                            clf = clf.fit(X_train, y_train)
-                            y_pred = clf.predict(X_test)
-                            print(clf.score(X_test, y_test))
-                            print(confusion_matrix(y_test, y_pred))
-
-
-                        import datetime
-
-                        starting_timenb = datetime.datetime.now()
-                        naiveBayes()
-                        end_timenb = datetime.datetime.now()
-                        difnaiveBayes = end_timenb - starting_timenb
-
-                        starting_timeknn = datetime.datetime.now()
-                        knn()
-                        end_timeknn = datetime.datetime.now()
-                        difknn = end_timeknn - starting_timeknn
-
-                        starting_timedt = datetime.datetime.now()
-                        dt()
-                        end_timedt = datetime.datetime.now()
-                        difdt = end_timedt - starting_timedt
-
-                        starting_timerf = datetime.datetime.now()
-                        rf()
-                        end_timerf = datetime.datetime.now()
-                        difrf = end_timerf - starting_timerf
-
-                        starting_timek_means = datetime.datetime.now()
-                        k_means()
-                        end_timek_means = datetime.datetime.now()
-                        difk_means = end_timek_means - starting_timek_means
-
-                        starting_timeperceptron = datetime.datetime.now()
-                        perceptron()
-                        end_timeperceptron = datetime.datetime.now()
-                        difperceptron = end_timeperceptron - starting_timeperceptron
-
-                        print(difnaiveBayes, difknn, difdt, difrf, difk_means, difperceptron)
-
-                        tableScores = {
-                            'Model': ['K-Nearest Neighbors (KNN)', 'Naive Bayes', 'Decision Tree Classification',
-                                      'Random Forest Tree Classification', 'Perceptron Classification',
-                                      'K-Means Clustering'],
-                            'Time': [difknn, difnaiveBayes, difdt, difrf, difperceptron, difk_means], }
-
-                        dfScores = pd.DataFrame(tableScores)
-                        # Create a column Rating_Rank which contains
-                        # the rank of each movie based on rating
-                        dfScores['Ranking'] = dfScores['Time'].rank(ascending=1)
-
-                        # Set the index to newly created column, Rating_Rank
-                        dfScores = dfScores.set_index('Ranking')
-                        dff = dfScores.sort_index()
-                        print(dff)
-
-                        tabelatempos = {
-                            'Model': ['K-Nearest Neighbors (KNN)', 'Naive Bayes', 'Decision Tree Classification',
-                                      'Random Forest Tree Classification', 'Perceptron Classification',
-                                      'K-Means Clustering'],
-                            'Time': [0.083743, 0.007015, 0.020000, 0.539887, 0.054854, 0.124665], }
-
-                        dftempo = pd.DataFrame(tabelatempos)
-                        sns.barplot(x=dftempo['Model'], y=dftempo['Time'], data=pd.melt(dftempo))
-                        plt.title("Execution time of the different models")
-                        plt.show()
                     else:
                         print("Invalid Option")
 
